@@ -1,87 +1,78 @@
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <numbers>
-#include <vector>
 #include <cmath>
-#include <numeric>
-#include <algorithm>
-#include <cstdio>
-#include <type_traits>
 #include <string>
+#include <concepts> // Per std::floating_point
 
-using namespace std;
-
-template <typename precision>
-double Basel_generic(precision StartN, precision EndN)
+// Limitiamo il template solo ai tipi floating point (float, double, long double)
+template <std::floating_point Precision>
+void compute_basel(Precision start_n, Precision end_n)
 {
-    double True_Sum = std::numbers::pi_v <double>
-                         * std::numbers::pi_v<double> / double(6);
+    // Il valore vero in double precision
+    constexpr double true_sum = std::numbers::pi_v<double> * std::numbers::pi_v<double> / 6.0;
 
-    std::string nameType = "";
+    // Determiniamo il nome del tipo a compile-time
+    std::string type_name = std::is_same_v<Precision, float> ? "float" : "double";
+    std::string filename = "output_" + type_name + ".txt";
 
-    if constexpr (std::is_same_v<precision, float>) {
-        nameType = "float";
-    }
-    else if constexpr (std::is_same_v<precision, double>) {
-        nameType = "double";
-    }
-    else {
-        printf("Error, no valid type inserted (float/double)!\n");
-        exit(EXIT_FAILURE);
+    // Usiamo std::ofstream del C++ al posto di FILE* e fopen
+    std::ofstream file(filename);
+    if (!file) {
+        std::cerr << "Errore nell'apertura del file " << filename << "!\n";
+        return;
     }
 
-    std::string filename = "output_" + nameType + ".txt";
+    // Intestazione
+    file << std::left << std::setw(15) << "N dim" 
+         << std::setw(20) << "Error Normal" 
+         << "Error Reverse\n\n";
 
-    FILE* file = fopen(filename.c_str(), "w");
-    if (file == nullptr) {
-        printf("Failed to open file\n");
-        exit(EXIT_FAILURE);
-    }
-
-    fprintf(file, "N dim        Error Normal      Error Reverse\n\n");
-
-    size_t num_points = 100; // numero di punti desiderati
-    precision log_start = std::log(StartN);
-    precision log_end   = std::log(EndN);
+    const size_t num_points = 20;
+    // Calcoliamo i logaritmi in double per evitare perdite di precisione negli indici
+    double log_start = std::log(static_cast<double>(start_n));
+    double log_end   = std::log(static_cast<double>(end_n));
 
     for (size_t i = 0; i < num_points; i++) {
-        precision N_max = std::exp(log_start + (log_end - log_start) * i / (num_points - 1));
-        size_t N_int = static_cast<size_t>(N_max);
-        std::vector<precision> arr(N_int);
+        double n_max_double = std::exp(log_start + (log_end - log_start) * i / (num_points - 1));
+        size_t n_int = static_cast<size_t>(n_max_double);
 
-        for (size_t N = 1; N <= N_int; N++) {
-            arr[N - 1] = precision(1) / (precision(N) * precision(N));
+        // --- Somma Normale (dal più grande al più piccolo) ---
+        Precision out_norm = 0;
+        for (size_t n = 1; n <= n_int; ++n) {
+            Precision term = Precision(1.0) / (Precision(n) * Precision(n));
+            out_norm += term;
         }
+        double err_norm = std::abs(true_sum - static_cast<double>(out_norm));
 
-        precision out_norm = std::accumulate(
-            arr.begin(), arr.end(), precision(0)
-        );
-        precision err_norm = std::abs(True_Sum - out_norm);
+        // --- Somma Inversa (dal più piccolo al più grande) ---
+        // Eliminiamo il vector: risparmiamo GIGABYTES di RAM e iteriamo al contrario
+        Precision out_inverse = 0;
+        for (size_t n = n_int; n > 0; --n) {
+            Precision term = Precision(1.0) / (Precision(n) * Precision(n));
+            out_inverse += term;
+        }
+        double err_inverse = std::abs(true_sum - static_cast<double>(out_inverse));
 
-        std::reverse(arr.begin(), arr.end());
-
-        precision out_inverse = std::accumulate(
-            arr.begin(), arr.end(), precision(0)
-        );
-        precision err_inverse = std::abs(True_Sum - out_inverse);
-
-        fprintf(file, "%.0f       %.10e       %.10e\n",
-                static_cast<double>(N_max),
-                static_cast<double>(err_norm),
-                static_cast<double>(err_inverse));
+        // Scrittura formattata su file
+        file << std::scientific << std::setprecision(10);
+        file << std::left << std::setw(15) << static_cast<double>(n_int)
+             << std::setw(20) << err_norm
+             << err_inverse << "\n";
     }
 
-    fclose(file);
-
-    return True_Sum;
+    // Il file si chiude automaticamente grazie al distruttore di std::ofstream
 }
 
 int main() {  
-    double True_Sum = Basel_generic<float>(1e3, 1e8);
-    printf("Single precision computing ended\n");
-    // Basel_generic<double>(1e7, 1e10);
-    // printf("Double precision computing ended\n");
+    std::cout << "Inizio calcolo in singola precisione (float)..." << std::endl;
+    compute_basel<float>(1e3f, 1e8f);
+    std::cout << "Calcolo in singola precisione terminato.\n\n";
+
+    std::cout << "Inizio calcolo in doppia precisione (double)..." << std::endl;
+    compute_basel<double>(1e7, 1e10);
+    std::cout << "Calcolo in doppia precisione terminato.\n";
     
-    // printf("\nTrue Sum\n");
-    // printf("%.10e\n", True_Sum);    
     return 0;
 }
