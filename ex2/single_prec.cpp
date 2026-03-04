@@ -6,7 +6,7 @@
 #include <string>
 #include <concepts> // Per std::floating_point
 
-// Limitiamo il template solo ai tipi floating point (float, double, long double)
+// Limitiamo il template solo ai tipi floating point (float, double)
 template <std::floating_point Precision>
 void compute_basel(Precision start_n, Precision end_n)
 {
