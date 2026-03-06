@@ -4,75 +4,85 @@
 #include <numbers>
 #include <cmath>
 #include <string>
-#include <concepts> // Per std::floating_point
+#include <vector>
+#include <numbers>
 
-// Limitiamo il template solo ai tipi floating point (float, double)
-template <std::floating_point Precision>
-void compute_basel(Precision start_n, Precision end_n)
+
+template <typename Precision>
+void compute_basel(int start_n, int end_n)
 {
-    // Il valore vero in double precision
-    constexpr double true_sum = std::numbers::pi_v<double> * std::numbers::pi_v<double> / 6.0;
+    // True value in double precision
+    double true_sum = std::numbers::pi_v<double> * std::numbers::pi_v<double> / 6.0;
 
-    // Determiniamo il nome del tipo a compile-time
+    // Typename determined at compile-time
     std::string type_name = std::is_same_v<Precision, float> ? "float" : "double";
     std::string filename = "output_" + type_name + ".txt";
-
-    // Usiamo std::ofstream del C++ al posto di FILE* e fopen
+    
     std::ofstream file(filename);
     if (!file) {
         std::cerr << "Errore nell'apertura del file " << filename << "!\n";
         return;
     }
 
-    // Intestazione
-    file << std::left << std::setw(15) << "N dim" 
+    file << std::left << std::setw(20) << "N dim" 
          << std::setw(20) << "Error Normal" 
          << "Error Reverse\n\n";
 
-    const size_t num_points = 20;
-    // Calcoliamo i logaritmi in double per evitare perdite di precisione negli indici
-    double log_start = std::log(static_cast<double>(start_n));
-    double log_end   = std::log(static_cast<double>(end_n));
+    int num_points = 40;
 
-    for (size_t i = 0; i < num_points; i++) {
-        double n_max_double = std::exp(log_start + (log_end - log_start) * i / (num_points - 1));
-        size_t n_int = static_cast<size_t>(n_max_double);
+    std::vector<Precision> log_vector;
+    Precision delta = static_cast<Precision>(end_n - start_n) / static_cast<Precision>((num_points - 1));
+    for (int i = 0; i < num_points; ++i) {
+        log_vector.push_back(std::pow(10, start_n + i * delta));
+    }
 
-        // --- Somma Normale (dal più grande al più piccolo) ---
+    for (size_t i = 0; i < static_cast<size_t>(num_points); i++) {
+        Precision n_int = log_vector[i];
+        // --- Normal ordering sum (greatest to smallest) ---
         Precision out_norm = 0;
         for (size_t n = 1; n <= n_int; ++n) {
             Precision term = Precision(1.0) / (Precision(n) * Precision(n));
             out_norm += term;
         }
-        double err_norm = std::abs(true_sum - static_cast<double>(out_norm));
+        Precision err_norm = std::abs(true_sum - (out_norm));
 
-        // --- Somma Inversa (dal più piccolo al più grande) ---
-        // Eliminiamo il vector: risparmiamo GIGABYTES di RAM e iteriamo al contrario
+        // --- Inverse sum (smallest to greatest) ---
         Precision out_inverse = 0;
         for (size_t n = n_int; n > 0; --n) {
             Precision term = Precision(1.0) / (Precision(n) * Precision(n));
             out_inverse += term;
         }
-        double err_inverse = std::abs(true_sum - static_cast<double>(out_inverse));
+        Precision err_inverse = std::abs(true_sum - (out_inverse));
 
-        // Scrittura formattata su file
-        file << std::scientific << std::setprecision(10);
-        file << std::left << std::setw(15) << static_cast<double>(n_int)
-             << std::setw(20) << err_norm
-             << err_inverse << "\n";
+        file << std::scientific << std::setprecision(6);
+        file << std::left << std::setw(20) << (n_int)
+            << std::setw(20) << err_norm
+            << err_inverse << "\n";
     }
-
-    // Il file si chiude automaticamente grazie al distruttore di std::ofstream
 }
 
-int main() {  
-    std::cout << "Inizio calcolo in singola precisione (float)..." << std::endl;
-    compute_basel<float>(1e3f, 1e8f);
-    std::cout << "Calcolo in singola precisione terminato.\n\n";
+#include <iostream>
+#include <string> // Necessario per std::stoi
 
-    std::cout << "Inizio calcolo in doppia precisione (double)..." << std::endl;
-    compute_basel<double>(1e7, 1e10);
-    std::cout << "Calcolo in doppia precisione terminato.\n";
+int main(int argc, char* argv[]) {
+    if (argc < 5) {
+        std::cerr << "ERROR, Needed: " << argv[0] << " <float_start> <float_end> <double_start> <double_end>" << std::endl;
+        return 1;
+    }
+
+    int f_start = std::stoi(argv[1]);
+    int f_end   = std::stoi(argv[2]);
+
+    int d_start = std::stoi(argv[3]);
+    int d_end   = std::stoi(argv[4]);
+
+    std::cout << "Starts single precision computing (float) between 10^" << f_start << " and 10^" << f_end << "..." << std::endl;
+    compute_basel<float>(f_start, f_end);
+    std::cout << "Computing ends\n\n";
     
+    std::cout << "Starts double precision computing (double) between 10^" << d_start << " and 10^" << d_end << "..." << std::endl;
+    compute_basel<double>(d_start, d_end);
+    std::cout << "Computing ends\n\n";
+
     return 0;
 }

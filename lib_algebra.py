@@ -14,58 +14,51 @@ def check_piv (A_in, indexes):
                 print(L, '\n')  
                 break
 
-def forw_subst_dumb(L, b, speak=False):
-# FORWARD SUBSTITUTION ALGORITHM
+def test_matrix(A_in, A_out):
+    # returns True if the two corresponds
+    print('\nA_test:\n', A_in)
+    print('\nA_exp:\n', A_out)
+    print('\nBoolean passed test =', np.allclose(A_in, A_out))
 
-    # Must be a square matrix
+
+
+def forw_subst_dumb(L, b, speak=False):
     if np.shape(L)[0] != np.shape(L)[1]:
         raise ValueError("Must use a square matrix!")
 
     n = np.shape(L)[0]
-    np_xi = np.array[n]
+    np_xi = np.zeros(n)
 
     for i in range(n):
-        # using dot prod we can optimize the func
-        # we should see also entries useless but in np_xi vector they are 0,
-        # so they do not interfere with the computation algorithm
-        sec1 = max(i-1, 1)
-        sec2 = max(i-2, 1)
-        x_i = (b[i] - np.sum(np.dot(L[:sec1][:sec2], np_xi[:sec1]))) / L[i][i]
+        x_i = (b[i] - np.dot(L[i, :i], np_xi[:i])) / L[i, i]
         np_xi[i] = x_i
 
     if speak:
         print('\nSolution found:\nx =', np_xi)
-            
         print('\nTest true answer:')
         print('b =      ', b)
         print('L • x =  ', np.dot(L, np_xi))
+    
+    return np_xi
 
 def back_subst_dumb(L, b, speak=False):
-# BACK SUBSTITUTION ALGORITHM
-
-    # Must be a square matrix
     if np.shape(L)[0] != np.shape(L)[1]:
         raise ValueError("Must use a square matrix!")
 
-    n = np.shape(L)[0] - 1
-    x_n = b[n] / L[n, n]
-    np_xi = np.zeros(n + 1)
-    np_xi[n] = x_n
-
-    for i in np.flip(np.arange(n)):
-        # using dot prod we can optimize the func
-        # we should see also entries useless but in np_xi vector they are 0,
-        # so they do not interfere with the computation algorithm
-        x_i = (b[i] - np.sum(np.dot(L[i], np_xi))) / L[i][i]
+    n = np.shape(L)[0]
+    np_xi = np.zeros(n)
+    
+    for i in reversed(range(n)):
+        x_i = (b[i] - np.dot(L[i, i+1:], np_xi[i+1:])) / L[i, i]
         np_xi[i] = x_i
 
     if speak:
         print('\nSolution found:\nx =', np_xi)
-            
         print('\nTest true answer:')
         print('b =      ', b)
         print('L • x =  ', np.dot(L, np_xi))
-
+        
+    return np_xi
 
 def gauss_eli(A_in): 
 # Function to perform GAUSSIAN ELIMINATION
