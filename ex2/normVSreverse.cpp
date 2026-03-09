@@ -61,8 +61,6 @@ void compute_basel(int start_n, int end_n)
     }
 }
 
-#include <iostream>
-#include <string> // Necessario per std::stoi
 
 int main(int argc, char* argv[]) {
     if (argc < 5) {

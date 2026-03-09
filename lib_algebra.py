@@ -14,11 +14,15 @@ def forw_subst(L_in, b_in, speak=False):
         np_xi[i] = x_i
 
     test = np.allclose(np.dot(L, np_xi), b) 
+    
+    if not test:
+        raise ValueError("Algorithm fails!\nb != L • x")
+    
     if speak:
         print('\nSolution found:\nx =', np_xi)
-        print(f'\nTest true answer: {test}')
         # print('b =      ', b)
         # print('L • x =  ', np.dot(L, np_xi))
+    
     return np_xi
 
 def back_subst(U_in, b_in, speak=False):
@@ -35,9 +39,12 @@ def back_subst(U_in, b_in, speak=False):
         np_xi[i] = x_i
 
     test = np.allclose(np.dot(U, np_xi), b) 
+
+    if not test:
+        raise ValueError("Algorithm fails!\nb != U • x")
+
     if speak:
         print('\nSolution found:\nx =', np_xi)
-        print(f'\nTest true answer: {test}')    # Prints True if the answer is correct after the check with b
         # print('b =      ', b)
         # print('U • x =  ', np.dot(U, np_xi))
                 
@@ -68,10 +75,13 @@ def matrix_inverse_dumb(A, speak=False):
         # solution becomes col of inverse
         A_inv[:, i] = x
     
+    test = np.allclose(A @ A_inv, np.eye(A.shape[0]))
+
+    if not test:
+        raise ValueError("Algorithm fails!\nA - A^-1 != 0")
+
     if speak:
-        test = np.allclose(A @ A_inv, np.eye(A.shape[0]))
         print('Solution found:\nA^-1 =\n', A_inv)
-        print(f'\nTest true answer: {test}')    # Prints True if the answer is correct
     return A_inv
 
 def BackGauss(A_in, b_in, speak=False):
@@ -110,10 +120,12 @@ def matrix_inverse(A, speak=False):
         # solution becomes col of inverse
         A_inv[:, i] = x
     
+    test = np.allclose(A @ A_inv, np.eye(A.shape[0]))
+    if not test:
+        raise ValueError("Algorithm fails!\nA - A^-1 != 0")
+
     if speak:
-        test = np.allclose(A @ A_inv, np.eye(A.shape[0]))
         print('Solution found:\nA^-1 =\n', A_inv)
-        print(f'\nTest true answer: {test}')    # Prints True if the answer is correct
     return A_inv
 
 
