@@ -61,29 +61,6 @@ def BackGauss_dumb(A_in, b_in, speak=False):
             b[i] -= c * b[j]  
     return back_subst(A, b, speak)
 
-def matrix_inverse_dumb(A, speak=False):
-# Computes inverse of a matrix
-    n = A.shape[0]
-    A_inv = np.zeros_like(A, dtype=float)
-    
-    # Cycle on each of Id mat cols
-    for i in range(n):
-        e = np.zeros(n)
-        e[i] = 1  # i-col of Id mat
-        # solve A x = e using gaussian elimination + backward
-        x = BackGauss_dumb(A.copy(), e)
-        # solution becomes col of inverse
-        A_inv[:, i] = x
-    
-    test = np.allclose(A @ A_inv, np.eye(A.shape[0]))
-
-    if not test:
-        raise ValueError("Algorithm fails!\nA - A^-1 != 0")
-
-    if speak:
-        print('Solution found:\nA^-1 =\n', A_inv)
-    return A_inv
-
 def BackGauss(A_in, b_in, speak=False):
     A = np.array(A_in, dtype=float)
     b = np.array(b_in, dtype=float)
@@ -111,10 +88,10 @@ def matrix_inverse(A, speak=False):
     n = A.shape[0]
     A_inv = np.zeros_like(A, dtype=float)
     
+    Mat_id = np.eye(n)
     # Cycle on each of Id mat cols
     for i in range(n):
-        e = np.zeros(n)
-        e[i] = 1  # i-col of Id mat
+        e = Mat_id[i]  # i-col of Id mat
         # solve A x = e using gaussian elimination + backward
         x = BackGauss(A.copy(), e)
         # solution becomes col of inverse
@@ -129,32 +106,34 @@ def matrix_inverse(A, speak=False):
     return A_inv
 
 
-
-def chol_fact(L):
-# Returns the Cholesky Factor L
-    n = np.shape(L)
+def chol_fact(A):
+    n = np.shape(A)
     # Must be a square matrix
-    if L.shape[0] != L.shape[1]:
+    if A.shape[0] != A.shape[1]:
         raise ValueError("Must use a square matrix!")
 
     # Check if symmetric
-    if not np.allclose(L, L.T, atol=1e-8):
-        raise ValueError(f'L is not symmetric! Max distance between matrices: {np.max(np.abs(L - L.T)):.2e}')
+    if not np.allclose(A, A.T, atol=1e-8):
+        raise ValueError(f'A is not symmetric! Max distance between matrices: {np.max(np.abs(A - A.T)):.2e}')
 
     L = np.zeros(shape=n, dtype=np.float64)
     for i in range(n[0]):
         for j in range(n[0]):
             if i == j:
             # Diagonal elements
-                L[i][i] = np.sqrt(L[i][i] - np.sum(L[i][:i]**2))
+                L[i][i] = np.sqrt(A[i][i] - np.sum(L[i][:i]**2))
             elif i > j:
             # Off diagonal
-                sec = max(i-2, 1)
-                L[i][j] = 1 / L[j][j] * (L[i][j] - np.sum(np.dot(L[i][:sec], L[j][:sec])))
-    print('\nCholesky factor (L):\n', L)
+                L[i, j] = (A[i, j] - np.dot(L[i, :j], L[j, :j])) / L[j, j]
+    test = np.allclose(L @ L.conj().T, A)
+    if not test:
+        raise ValueError("Algorithm fails!Il test L*L^T != A")
+    
     return L
 
-def BackChol(L, b):
-    L = chol_fact(L)
-    back_subst(L, b)
+def BackChol(A, b):
+    L = chol_fact(A)
+    y = forw_subst(L, b)
+    x = back_subst(L.conj().T, y)
+    return x
 
