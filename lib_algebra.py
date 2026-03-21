@@ -95,16 +95,16 @@ def LU_dec(A_in):
     """Performs LU decomposition on a given A matrix.
     Registers also piv_sign, the sign of the Determinant given by the pivoting operations"""
 
-    A = np.copy(A_in)
-    n = np.shape(A)[0]
+    U = np.copy(A_in)
+    n = np.shape(U)[0]
     L = np.eye(n)
     piv_sign = 1
 
+    # Find row with maximum absolute value in column j
     for j in range(n-1):
-        # Find row with maximum absolute value in column j
-        max_row = j + np.argmax(np.abs(A[j:, j]))
+        max_row = j + np.argmax(np.abs(U[j:, j]))
         if max_row != j:
-            A[[j, max_row]] = A[[max_row, j]]
+            U[[j, max_row]] = U[[max_row, j]]
             if j > 0:
                 L[[j, max_row], :j] = L[[max_row, j], :j]
             piv_sign *= -1
@@ -112,11 +112,11 @@ def LU_dec(A_in):
 
         # Gaussian elimination
         for i in range(j+1, n):
-            c = A[i,j] / A[j,j]
-            A[i,j:] -= c * A[j,j:]
+            c = U[i,j] / U[j,j]
+            U[i,j:] -= c * U[j,j:]
             L[i, j] = c
     
-    return L, A, piv_sign # A == U
+    return L, U, piv_sign
 
 
 def chol_fact(A):
@@ -140,7 +140,7 @@ def chol_fact(A):
                 L[i, j] = (A[i, j] - np.dot(L[i, :j], L[j, :j])) / L[j, j]
     test = np.allclose(L @ L.T.conj(), A)
     if not test:
-        raise ValueError("Algorithm fails!Il test L*L^T != A")
+        raise ValueError("Algorithm fails! L*L^T != A")
     
     return L
 
@@ -168,18 +168,18 @@ def householder_2x2(A_input):
 
 def QR_dec(A_input):
     dim = len(A_input)
-    R = np.copy(A_input)
-    Q = np.eye(dim)
+    R = np.copy(A_input, dtype=complex)
+    Q = np.eye(dim, dtype=complex)
 
     for i in range(dim-1):
         x = R[i:, i]
         e1 = np.zeros_like(x)
-        e1[0] = np.sqrt(np.real(x.T.conj() @ x)) * (1 if x[0] >= 0 else -1)
+        e1[0] = np.sqrt(np.real(x.T.conj() @ x)) * x[0] / np.abs(x[0])
 
         u = x + e1
         v = u / np.sqrt(np.real(u.T.conj() @ u))
 
-        Pi = np.eye(dim - i) - 2 * np.outer(v, v)
+        Pi = np.eye(dim - i, dtype=complex) - 2 * np.outer(v, v.conj())
 
         P = np.eye(dim)
         P[i:, i:] = Pi

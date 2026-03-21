@@ -1,5 +1,5 @@
 #include <iostream>
-#include <iomanip> // for std::scientific
+#include <iomanip>
 
 int main() {
     // --- Part 1: single precision ---
