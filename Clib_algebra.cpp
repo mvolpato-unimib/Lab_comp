@@ -8,11 +8,14 @@
 #include <tuple>
 #include "matrix.h"
 
+template<typename T> struct is_complex : std::false_type {};
+template<typename T> struct is_complex<std::complex<T>> : std::true_type {};
 template <typename T>
 using Vector = std::vector<T>;
 using dMatrix = Matrix<double>;
 using cMatrix = Matrix<std::complex<double>>;
 using std::cout;
+
 
 // ----------------------------------------------------------
 // LINEAR SYSTEMS SOLVERS AND DECOMPOSITION OF MATRICES 
@@ -116,11 +119,86 @@ lu_decomposition(const Matrix<T>& A) {
 }
 
 
-// QR DEC
+/**
+ * Performs QR decomposition to a input matrix A:
+ * @param A Generic input square matrix
+ * @return Q, R square matrices:
+ * - Q Orthogonal matrix
+ * - R Upper triangular matrix
+ */
+template <typename T>
+std::tuple<Matrix<T>, Matrix<T>> 
+QR_dec(const Matrix<T>& A) {
+    int n = A.nr;
+    Matrix<T> R(A);
+    Matrix<T> Q(n,n);
+    Q.identity();
+
+    for (int i=0; i<n-1; i++) {
+        Matrix<T> x(n-i, 1);
+        for (int k=i; k<n; k++) {
+            x(k-i, 0) = R(k, i);
+        }
+        
+        Matrix<T> e1(x); e1.zeros();
+        double norm = std::sqrt(x.norm2());
+        
+        if constexpr (is_complex<T>::value) {
+            std::complex<double> phase = x(0,0) / std::abs(x(0,0));
+            e1(0,0) = norm*phase;
+        } else {
+            double sign = (x(0,0) >= 0) ? 1.0 : -1.0;
+            e1(0,0) = sign * norm;
+            e1(0,0) = norm;
+        }
+
+        Matrix<T> u = x + e1;
+        Matrix<T> v = u * (1 / std::sqrt(u.norm2()));
+
+        Matrix<T> idenPi(n-i, n-i);
+        idenPi.identity();
+        Matrix<T> outer(v.nr, v.nr);
+        for (int row=0; row<v.nr; row++) {
+            for (int col=0; col<v.nr; col++) {
+                auto conj_val = v(col, 0);
+                if constexpr (is_complex<T>::value) {
+                    outer(row, col) = v(row, 0) * std::conj(conj_val);
+                } else {
+                    outer(row, col) = v(row, 0) * conj_val;
+                }
+            }
+        }
+        
+        Matrix<T> Pi = idenPi - outer * 2;
+        Matrix<T> P(n,n);
+        P.identity();
+        for (int row=i; row<n; row++) {
+            for (int col=i; col<n; col++) {
+                P(row,col) = Pi(row - i, col - i);
+            }
+        }
+
+        R = P.dot(R);
+        Q = Q.dot(P.dagger());
+    }
+
+    return {Q, R};
+}
 
 
 
-// SOLVER
+/**
+ * Solve the generic linear system using QR decomposition combined with Backward substitution
+ * @param A Generic square matrix of the coefficients
+ * @param b Vector of known terms
+ * @result x Vector of the solutions 
+ */
+template <typename T>
+Matrix<T> QR_solver(const Matrix<T>& A, const Matrix<T>& b) {
+    auto [Q, R] = QR_dec(A);
+    auto x = BackSubst(R, Q.dagger().dot(b));  
+    return x;
+}
 
 // ----------------------------------------------------------
 // END SOLVER
@@ -170,30 +248,36 @@ lu_decomposition(const Matrix<T>& A) {
 
 int main(){
     dMatrix A(3,3);
-    A.random();
+    // A.random();
+    A.data = {2., -1, .0, 
+            -1., 2.0, -1.0, 
+            .0, -1.0, 2.0};
+
     cout << "Matrice A originale:\n";
     A.print();
 
-    auto [L, U, P, det_sign] = lu_decomposition(A);
+    dMatrix b(3,1);
+    b.data = {1, 0, 1};
 
-    cout << "\nMatrice L:\n"; L.print();
-    cout << "\nMatrice U:\n"; U.print();
+    cout << "Matrice b originale:\n";
+    b.print();
 
-    // Verifichiamo PA = LU
-    cout << "\nVerifica LU (Prodotto L*U):\n";
-    dMatrix LU = L.dot(U);
-    LU.print();
+    auto x = QR_solver(A, b);
+    cout << "\nMatrice x:\n"; x.print();
 
-    cout << "\nVerifica PA (A riordinata secondo P):\n";
-    // Creiamo una matrice che rappresenta A con le righe scambiate
-    dMatrix PA(3,3);
-    for(int i=0; i<3; i++) {
-        int row_index = P(i, 0); // Prendi l'indice della riga originale
-        for(int j=0; j<3; j++) {
-            PA(i, j) = A(row_index, j);
-        }
-    }
-    PA.print();
+    using cpx = std::complex<double>;
+    const cpx i(0, 1);
+
+    // Matrice 2x2 complessa
+    dMatrix A(2,2);
+    A.data = {  i, 1.0, 
+            2.0,  -i };
+
+
+
+    // cout << "\nVerifica QR (Q*R - A):\n";
+    // dMatrix diff = Q.dot(R) - A;
+    // diff.print();
 
     return 0;
 }

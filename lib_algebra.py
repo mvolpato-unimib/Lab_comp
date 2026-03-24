@@ -10,7 +10,7 @@ def forw_subst(L_in, b_in, speak=False):
     if np.shape(L)[0] != np.shape(L)[1]:
         raise ValueError("Must use a square matrix!")
 
-    n = np.shape(L)[0]
+    n = len(L)
     np_xi = np.zeros(n)
 
     for i in range(n):
@@ -36,7 +36,7 @@ def back_subst(U_in, b_in, speak=False):
     if np.shape(U)[0] != np.shape(U)[1]:
         raise ValueError("Must use a square matrix!")
 
-    n = np.shape(U)[0]
+    n = len(U)
     np_xi = np.zeros(n)
     
     for i in reversed(range(n)):
@@ -168,8 +168,8 @@ def householder_2x2(A_input):
 
 def QR_dec(A_input):
     dim = len(A_input)
-    R = np.copy(A_input, dtype=complex)
-    Q = np.eye(dim, dtype=complex)
+    R = np.copy(A_input)
+    Q = np.eye(dim)
 
     for i in range(dim-1):
         x = R[i:, i]
