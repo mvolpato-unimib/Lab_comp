@@ -7,11 +7,9 @@ import numpy as np
 def forw_subst(L_in, b_in, speak=False):
     L = np.copy(L_in)
     b = np.copy(b_in)
-    if np.shape(L)[0] != np.shape(L)[1]:
-        raise ValueError("Must use a square matrix!")
 
     n = len(L)
-    np_xi = np.zeros(n)
+    np_xi = np.zeros(n, dtype=complex)
 
     for i in range(n):
         x_i = (b[i] - np.dot(L[i, :i], np_xi[:i])) / L[i, i]
@@ -33,11 +31,8 @@ def forw_subst(L_in, b_in, speak=False):
 def back_subst(U_in, b_in, speak=False):
     U = np.copy(U_in)
     b = np.copy(b_in)
-    if np.shape(U)[0] != np.shape(U)[1]:
-        raise ValueError("Must use a square matrix!")
-
     n = len(U)
-    np_xi = np.zeros(n)
+    np_xi = np.zeros(n, dtype=complex)
     
     for i in reversed(range(n)):
         x_i = (b[i] - np.dot(U[i, i+1:], np_xi[i+1:])) / U[i, i]
@@ -129,7 +124,7 @@ def chol_fact(A):
     if not np.allclose(A, A.T.conj(), atol=1e-8):
         raise ValueError(f'A is not symmetric! Max distance between matrices: {np.max(np.abs(A - A.T.conj())):.2e}')
 
-    L = np.zeros(shape=n, dtype=np.float64)
+    L = np.zeros(shape=n, dtype=complex)
     for i in range(n[0]):
         for j in range(n[0]):
             if i == j:
@@ -179,9 +174,9 @@ def QR_dec(A_input):
         u = x + e1
         v = u / np.sqrt(np.real(u.T.conj() @ u))
 
-        Pi = np.eye(dim - i, dtype=complex) - 2 * np.outer(v, v.conj())
+        Pi = np.eye(dim - i) - 2 * np.outer(v, v.conj())
 
-        P = np.eye(dim)
+        P = np.eye(dim, dtype=complex)
         P[i:, i:] = Pi
 
         R = P @ R
@@ -229,7 +224,7 @@ def determinant(A_in, choice='QR'):
         for row in range(n):
             det *= U[row,row]    
 
-        return det
+        return np.float64(det)
 
 
     if choice=='Cholesky':
@@ -246,7 +241,7 @@ def determinant(A_in, choice='QR'):
         for row in range(n):
             det *= L[row,row]**2
 
-        return det
+        return np.float64(det)
 
 
     if choice=='QR':
@@ -259,7 +254,7 @@ def determinant(A_in, choice='QR'):
         for row in range(n):
             det *= R[row,row]     
 
-        return det
+        return np.float64(det)
 
 # ----------------------------------------------------------
 # END DETERMINANT
@@ -307,28 +302,24 @@ def matrix_inverse(A, speak=False):
 # EIGENVALUES & EIGENVECTORS
 # ----------------------------------------------------------
 
-def Power_mth(A_in, epsilon=1e-14, N_max=100000):
-    """
-    Finds maximum eigval and eigvect for a given Real matrix.
-    Doesn't work for Complex matrix.
-    """
+def power_mth(A_in, epsilon=1e-14, N_max=10000):
     A = np.copy(A_in)
     x_0 = np.random.rand(len(A))    # choice of a random vector
-    y = x_0 / np.sqrt(np.real(x_0.T.conj() @ x_0))      # the vector is chosen normalised
-    lamb1 = 1
-    lambt = 0
+    y = x_0 / np.sqrt(x_0@x_0)      # the vector is chosen normalised
+    lambold = 1
+    lambnew = 0
 
     for i in range(N_max):
-        if abs(lamb1 - lambt) > epsilon:
+        if abs(lambold - lambnew) > epsilon:
             y = A @ y
             y = y / np.sqrt(y@y)
-            lambt = lamb1
-            lamb1 = y.T.conj() @ A @ y     # y is normalised --> lamb1 is the next eigval
+            lambnew = lambold
+            lambold = y.T @ A @ y     # y is normalised --> lamb1 is the next eigval
         else:
-            # print(f'Iteration {i}: reached max precision\n')
+            print(f'Iteration {i}: reached max precision (pwr mth)')
             break
         
-    eigVal = lamb1 
+    eigVal = lambold 
     eigVect = y
     if np.sum(A @ eigVect) - np.sum(eigVal * eigVect) > 1e-8:
         raise ValueError('Eigenvalue/vector is not accurate')
@@ -336,6 +327,30 @@ def Power_mth(A_in, epsilon=1e-14, N_max=100000):
     return eigVal, eigVect
 
 
+
+
+def QR_eigensolver(A_in, tol=1e-14, N_max=int(1e6)):
+    Ak = np.copy(A_in)
+    n = len(Ak)
+    Qk = np.eye(n)
+    for i in range(N_max):
+        Q, R = QR_dec(Ak)
+        Ak_old = np.copy(Ak)
+        Ak = R @ Q
+
+        if np.allclose(Ak, Ak_old, rtol=tol):
+            print(f'Tolerance reached at step {i+1} (QR eigen)')
+            eigenVal = np.diag(Ak)
+            eigenVect = Qk
+            return eigenVal, eigenVect    # We are interested in the columns of Qk, that are the eigenvectors
+        
+        Qk = Qk @ Q
+    eigenVal = np.diag(Ak)
+    eigenVect = Qk
+    if not np.allclose(A_in @ eigenVect, eigenVal * eigenVect, rtol=tol):
+        raise ValueError(f'PROBLEM, solutions don\'t reach the precision in {N_max} steps')
+    
+    return eigenVal, eigenVect    # We are interested in the columns of Qk, that are the eigenvectors
 
 # ----------------------------------------------------------
 # END EIGENS
