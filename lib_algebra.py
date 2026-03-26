@@ -304,29 +304,69 @@ def matrix_inverse(A, speak=False):
 
 def power_mth(A_in, epsilon=1e-14, N_max=10000):
     A = np.copy(A_in)
-    x_0 = np.random.rand(len(A))    # choice of a random vector
-    y = x_0 / np.sqrt(x_0@x_0)      # the vector is chosen normalised
-    lambold = 1
-    lambnew = 0
+    eigVal = 1
+    eigVect = np.ones(len(A))
 
-    for i in range(N_max):
-        if abs(lambold - lambnew) > epsilon:
-            y = A @ y
-            y = y / np.sqrt(y@y)
-            lambnew = lambold
-            lambold = y.T @ A @ y     # y is normalised --> lamb1 is the next eigval
-        else:
-            print(f'Iteration {i}: reached max precision (pwr mth)')
-            break
-        
-    eigVal = lambold 
-    eigVect = y
-    if np.sum(A @ eigVect) - np.sum(eigVal * eigVect) > 1e-8:
-        raise ValueError('Eigenvalue/vector is not accurate')
+    while np.sum(A @ eigVect) - np.sum(eigVal * eigVect) > 1e-8:
+        x_0 = np.random.rand(len(A))    # choice of a random vector
+        y = x_0 / np.sqrt(x_0@x_0)      # the vector is chosen normalised
+        lambold = 1
+        lambnew = 0
+
+        for i in range(N_max):
+            if abs(lambold - lambnew) > epsilon:
+                y = A @ y
+                y = y / np.sqrt(y@y)
+                lambnew = lambold
+                lambold = y.T @ A @ y     # y is normalised --> lamb1 is the next eigval
+            else:
+                # print(f'Iteration {i}: reached max precision (pwr mth)')
+                break
+            
+        eigVal = lambold 
+        eigVect = y
+        # if np.sum(A @ eigVect) - np.sum(eigVal * eigVect) > 1e-8:
+        #     raise ValueError('Eigenvalue/vector is not accurate')
 
     return eigVal, eigVect
 
 
+def inv_power_mth(A_in, epsilon=1e-14, N_max=10000):
+    A = np.copy(A_in)
+    Q, R = QR_dec(A)
+    # x_k+1 = A^-1 x --> A x_k+1 = x --> Q R x_k+1 = x --> 
+    # --> R x_k+1 = Q^-1 x = Q.T x = d 
+    # R x_k+1 = d 
+    eigVal = 1
+    eigVect = np.ones(len(A))
+
+    while np.sum(A @ eigVect) - np.sum(eigVal * eigVect) > 1e-8:
+        x_k = np.random.rand(len(A))    # choice of a random vector
+        x_k = x_k / np.sqrt(x_k@x_k)      # the vector is chosen normalised
+        lambold = 1
+        lambnew = 0
+        for i in range(N_max):
+            if np.abs(lambold - lambnew) > epsilon:
+                d = Q.conj().T @ x_k
+                x_k1 = back_subst(R, d)
+                num = x_k.conj().T @ x_k
+                den = x_k.conj().T @ x_k1
+                x_k1 = x_k1 / np.sqrt(x_k1@x_k1)
+                x_k = x_k1
+
+                lambold = lambnew
+                # Rayleigh Factor
+                lambnew = num / den 
+            else:
+                # print(f'Iteration {i}: reached max precision (inv pwr mth)')
+                break
+            
+        eigVal = lambold 
+        eigVect = x_k
+    # if np.sum(A @ eigVect) - np.sum(eigVal * eigVect) > 1e-8:
+    #     raise ValueError('Eigenvalue/vector is not accurate')
+
+    return eigVal, eigVect
 
 
 def QR_eigensolver(A_in, tol=1e-14, N_max=int(1e6)):
@@ -339,7 +379,7 @@ def QR_eigensolver(A_in, tol=1e-14, N_max=int(1e6)):
         Ak = R @ Q
 
         if np.allclose(Ak, Ak_old, rtol=tol):
-            print(f'Tolerance reached at step {i+1} (QR eigen)')
+            # print(f'Tolerance reached at step {i+1} (QR eigen)')
             eigenVal = np.diag(Ak)
             eigenVect = Qk
             return eigenVal, eigenVect    # We are interested in the columns of Qk, that are the eigenvectors
