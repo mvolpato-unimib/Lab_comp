@@ -254,7 +254,7 @@ def determinant(A_in, choice='QR'):
         for row in range(n):
             det *= R[row,row]     
 
-        return np.float64(det)
+        return np.real(det)
 
 # ----------------------------------------------------------
 # END DETERMINANT
