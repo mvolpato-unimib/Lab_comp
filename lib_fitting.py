@@ -30,12 +30,15 @@ def lagrange_int(x, f, N_points=1000):
     Function that extract the points from the interpolation of f, useful for drawing with plt 
     """
     lag = Lagrange(x, f)
-    xoff = 0.001*(x[-1] - x[0])
+    xoff = 0.001*(max(x) - min(x))
     x_in = np.linspace(x[0]-xoff, x[-1]+xoff, N_points)
     y_in = []
     for i in x_in:
         y_in.append(lag(i))
     return x_in, np.array(y_in)
 
+def Cheby_nodes(dim):
+    j = np.arange(dim)
+    return -np.cos(j*np.pi / (dim-1))
 
 
