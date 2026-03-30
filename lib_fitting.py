@@ -1,5 +1,18 @@
 import numpy as np
-import lib_algebra
+from lib_algebra import QR_solver
+
+def Direct_mth(xarr, yarr, N_points=1000):
+    
+    ls = []
+    for i in range(len(xarr)):
+        ls.append(xarr**i)
+    vanderm =  np.array(ls).T
+    a_arr = np.flip(QR_solver(vanderm, yarr))
+
+    xoff = 0.001*(max(xarr) - min(xarr))
+    x_in = np.linspace(xarr[0]-xoff, xarr[-1]+xoff, N_points)
+    y_in = np.polyval(a_arr, x_in)
+    return x_in, y_in
 
 class Lagrange:
     """
