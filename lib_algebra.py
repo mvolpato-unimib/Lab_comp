@@ -325,7 +325,7 @@ def power_mth(A_in, epsilon=1e-14, N_max=10000):
             
         eigVal = lambold 
         eigVect = y
-        # if np.sum(A @ eigVect) - np.sum(eigVal * eigVect) > 1e-8:
+        # if abs(np.sum(A @ eigVect) - np.sum(eigVal * eigVect) > 1e-8):
         #     raise ValueError('Eigenvalue/vector is not accurate')
 
     return eigVal, eigVect

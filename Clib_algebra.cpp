@@ -246,32 +246,34 @@ Matrix<T> QR_solver(const Matrix<T>& A, const Matrix<T>& b) {
 // # END EIGENS
 // # ----------------------------------------------------------
 
+
+
 int main(){
-    dMatrix A(3,3);
-    // A.random();
-    A.data = {2., -1, .0, 
-            -1., 2.0, -1.0, 
-            .0, -1.0, 2.0};
+    // dMatrix A(3,3);
+    // // A.random();
+    // A.data = {2., -1, .0, 
+    //         -1., 2.0, -1.0, 
+    //         .0, -1.0, 2.0};
 
-    cout << "Matrice A originale:\n";
-    A.print();
+    // cout << "Matrice A originale:\n";
+    // A.print();
 
-    dMatrix b(3,1);
-    b.data = {1, 0, 1};
+    // dMatrix b(3,1);
+    // b.data = {1, 0, 1};
 
-    cout << "Matrice b originale:\n";
-    b.print();
+    // cout << "Matrice b originale:\n";
+    // b.print();
 
-    auto x = QR_solver(A, b);
-    cout << "\nMatrice x:\n"; x.print();
+    // auto x = QR_solver(A, b);
+    // cout << "\nMatrice x:\n"; x.print();
 
-    using cpx = std::complex<double>;
-    const cpx i(0, 1);
+    // using cpx = std::complex<double>;
+    // const cpx i(0, 1);
 
-    // Matrice 2x2 complessa
-    dMatrix A(2,2);
-    A.data = {  i, 1.0, 
-            2.0,  -i };
+    // // Matrice 2x2 complessa
+    // dMatrix A(2,2);
+    // A.data = {  i, 1.0,
+    //         2.0,  -i };
 
 
 
