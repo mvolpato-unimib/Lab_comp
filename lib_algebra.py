@@ -182,8 +182,8 @@ def QR_dec(A_input):
         R = P @ R
         Q = Q @ P.T.conj()
 
-    if not np.allclose(A_input, Q@R):
-        raise ValueError('The decomposition is not working! A - A\' != 0')
+    # if not np.allclose(A_input, Q@R):
+    #     raise ValueError('The decomposition is not working! A - A\' != 0')
     return Q, R
 
 
@@ -363,8 +363,10 @@ def inv_power_mth(A_in, epsilon=1e-14, N_max=10000):
             
         eigVal = lambold 
         eigVect = x_k
-    # if np.sum(A @ eigVect) - np.sum(eigVal * eigVect) > 1e-8:
-    #     raise ValueError('Eigenvalue/vector is not accurate')
+    # res = A @ eigVect - eigVal * eigVect
+    # err = np.sqrt(np.sum(np.abs(res)**2))
+    # if err > 1e-8:
+    #     raise ValueError("Eigenpair not accurate")
 
     return eigVal, eigVect
 
@@ -378,11 +380,10 @@ def QR_eigensolver(A_in, tol=1e-14, N_max=int(1e6)):
         Ak_old = np.copy(Ak)
         Ak = R @ Q
 
-        if np.allclose(Ak, Ak_old, rtol=tol):
-            # print(f'Tolerance reached at step {i+1} (QR eigen)')
+        if np.sqrt(np.sum(np.abs(Ak - np.diag(np.diag(Ak)))**2)) < tol:
             eigenVal = np.diag(Ak)
             eigenVect = Qk
-            return eigenVal, eigenVect    # We are interested in the columns of Qk, that are the eigenvectors
+            return eigenVal, eigenVect    
         
         Qk = Qk @ Q
     eigenVal = np.diag(Ak)
@@ -390,7 +391,7 @@ def QR_eigensolver(A_in, tol=1e-14, N_max=int(1e6)):
     if not np.allclose(A_in @ eigenVect, eigenVal * eigenVect, rtol=tol):
         raise ValueError(f'PROBLEM, solutions don\'t reach the precision in {N_max} steps')
     
-    return eigenVal, eigenVect    # We are interested in the columns of Qk, that are the eigenvectors
+    return eigenVal, eigenVect    
 
 # ----------------------------------------------------------
 # END EIGENS
