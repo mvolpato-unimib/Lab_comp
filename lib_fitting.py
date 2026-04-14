@@ -55,3 +55,38 @@ def Cheby_nodes(dim):
     return -np.cos(j*np.pi / (dim-1))
 
 
+def lin_fit(x, y, covar, linfunc):
+    from scipy.stats import chi2
+    from lib_algebra import mat_inv, BackChol
+    X_ls = [f(x) for f in linfunc]
+    X = np.array(X_ls).T
+    W = mat_inv(covar)
+    M = X.conj().T @ W @ X
+    b = X.T @ W @ y
+    
+    # Parameters of the fit
+    pars = np.real(BackChol(M, b))
+    cov_par = mat_inv(M)
+    
+    r = y - X @ pars
+    Chi2 = np.real(r.T @ W @ r)
+    dof = len(x) - len(linfunc)
+    p = chi2.sf(Chi2, dof)
+
+    return list(pars), np.real(cov_par), Chi2, p
+    
+
+def eval_Par(par_func, old_pars, old_cov_pars):
+    from lib_equations import Part_dervs
+    J_mat_ls = []
+    new_pars = []
+    for pf in par_func:
+        part_der = Part_dervs(pf, old_pars)
+        J_mat_ls.append(part_der)
+        new_pars.append(pf(*old_pars))
+
+    J_mat = np.array(J_mat_ls)
+    new_cov_pars = J_mat @ old_cov_pars @ J_mat.T
+    return new_pars, new_cov_pars
+
+

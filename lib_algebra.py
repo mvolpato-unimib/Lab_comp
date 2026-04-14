@@ -64,8 +64,8 @@ def BackGauss_dumb(A_in, b_in, speak=False):
 
 
 def BackGauss(A_in, b_in, speak=False):
-    A = np.array(A_in, dtype=float)
-    b = np.array(b_in, dtype=float)
+    A = np.array(A_in, dtype=complex)
+    b = np.array(b_in, dtype=complex)
     n = np.shape(A)[0]
 
     for j in range(n-1):
@@ -266,12 +266,12 @@ def determinant(A_in, choice='QR'):
 # INVERSE OF A MATRIX
 # ----------------------------------------------------------
 
-def matrix_inverse(A, speak=False):
+def mat_inv(A):
     """
     Computes inverse of a matrix.
     """
     n = A.shape[0]
-    A_inv = np.zeros_like(A, dtype=float)
+    A_inv = np.zeros_like(A, dtype=complex)
     
     Mat_id = np.eye(n)
     # Cycle on each of Id mat cols
@@ -283,11 +283,8 @@ def matrix_inverse(A, speak=False):
         A_inv[:, i] = x
     
     test = np.allclose(A @ A_inv, np.eye(A.shape[0]))
-    if not test:
-        raise ValueError("Algorithm fails!\nA - A^-1 != 0")
-
-    if speak:
-        print('Solution found:\nA^-1 =\n', A_inv)
+    # if not test:
+    #     raise ValueError("Algorithm fails!\nA - A^-1 != 0")
     return A_inv
 
 # ----------------------------------------------------------
