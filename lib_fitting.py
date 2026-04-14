@@ -1,8 +1,9 @@
 import numpy as np
-from lib_algebra import QR_solver
+import matplotlib.pyplot as plt
 
 def Direct_mth(xarr, yarr, N_points=1000):
-    
+    from lib_algebra import QR_solver
+
     ls = []
     for i in range(len(xarr)):
         ls.append(xarr**i)
@@ -90,3 +91,29 @@ def eval_Par(par_func, old_pars, old_cov_pars):
     return new_pars, new_cov_pars
 
 
+def plot_fit (f, x_sc, y_sc, yerr, params, cov_par,
+              start, stop, fit_name='Fit function', nsigma=1,
+              xlab='X COO', ylab='Y COO', ):
+    from lib_equations import Part_dervs
+    eps = 1e-8
+    x_plot = np.linspace(start, stop, 500)
+    y_plot = np.array([f(x, *params) for x in x_plot])
+    J_mat_ls = []
+    for x in x_plot:
+        part_der = []
+        for i, p in enumerate(params):
+            diff_pars = params.copy()
+            diff_pars[i] += eps
+            part_der.append((f(x, *diff_pars) - f(x, *params))/eps)
+        J_mat_ls.append(part_der)
+    
+    J_mat = np.array(J_mat_ls)
+    sy = nsigma * np.sqrt(np.diag(J_mat @ cov_par @ J_mat.T))    # choice of # sigma to plot
+
+    plt.plot(x_plot, f(x_plot, *params), label=fit_name, color='red')
+    plt.errorbar(x_sc, y_sc, yerr=yerr, fmt='o', label='Dati')
+    plt.fill_between(x_plot, y_plot+sy, y_plot-sy, alpha=0.2, color='red', label=rf'Banda di errore a ${nsigma}\sigma$')
+    plt.xlabel(xlab)
+    plt.ylabel(ylab)
+    plt.legend()
+    plt.show()
