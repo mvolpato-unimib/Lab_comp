@@ -29,8 +29,6 @@ def bisec(f, a, b, optim=True, tol=1e-14, out_niter=False, out_story=False):
 
         fc = f(c)
         
-        if abs(fc) < tol or abs(b - a) < tol:
-            break
 
         if fa * fc > 0:
             a, fa = c, fc
@@ -39,11 +37,14 @@ def bisec(f, a, b, optim=True, tol=1e-14, out_niter=False, out_story=False):
         
         story.append(c)
         n_iter += 1
+        
+        if abs(fc) < tol or abs(b - a) < tol:
+            break
 
     if out_niter: 
         return (c, n_iter) 
     elif out_story:
-        return (c, n_iter, story) 
+        return (c, n_iter, np.array(story)) 
     else:
         return c
 

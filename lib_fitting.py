@@ -94,7 +94,6 @@ def eval_Par(par_func, old_pars, old_cov_pars):
 def plot_fit (f, x_sc, y_sc, yerr, params, cov_par,
               start, stop, fit_name='Fit function', nsigma=1,
               xlab='X COO', ylab='Y COO', ):
-    from lib_equations import Part_dervs
     eps = 1e-8
     x_plot = np.linspace(start, stop, 500)
     y_plot = np.array([f(x, *params) for x in x_plot])
