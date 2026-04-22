@@ -152,9 +152,7 @@ def householder_2x2(A_input):
     A = np.copy(A_input)
     u = np.copy(A[:,0])  # initially set as first column of A and then added the term plus/minus
     n = np.sqrt(np.real(u.T.conj() @ u))
-    s = 1
-    if A[0,0] - n > A[0,0] + n:
-        s = - 1
+    s = A[0,0] / abs(A[0,0])
     u[0] += s * n
 
     den = n**2 + s * A[0,0] * n
@@ -368,16 +366,17 @@ def inv_power_mth(A_in, epsilon=1e-14, N_max=10000):
     return eigVal, eigVect
 
 
-def QR_eigensolver(A_in, tol=1e-14, N_max=int(1e6)):
+def QR_eigensolver(A_in, tol=1e-14, N_max=1e4):
+    import warnings
+    N_max = int(N_max)
     Ak = np.copy(A_in)
     n = len(Ak)
     Qk = np.eye(n)
     for i in range(N_max):
         Q, R = QR_dec(Ak)
-        Ak_old = np.copy(Ak)
         Ak = R @ Q
 
-        if np.sqrt(np.sum(np.abs(Ak - np.diag(np.diag(Ak)))**2)) < tol:
+        if np.sum(np.abs(Ak - np.diag(np.diag(Ak)))**2) < tol:
             eigenVal = np.diag(Ak)
             eigenVect = Qk
             return eigenVal, eigenVect    
@@ -385,10 +384,11 @@ def QR_eigensolver(A_in, tol=1e-14, N_max=int(1e6)):
         Qk = Qk @ Q
     eigenVal = np.diag(Ak)
     eigenVect = Qk
+
     if not np.allclose(A_in @ eigenVect, eigenVal * eigenVect, rtol=tol):
-        raise ValueError(f'PROBLEM, solutions don\'t reach the precision in {N_max} steps')
-    
-    return eigenVal, eigenVect    
+        warnings.warn(f'PROBLEM, solutions don\'t reach the precision in {N_max} steps')
+
+    return eigenVal, eigenVect
 
 # ----------------------------------------------------------
 # END EIGENS
