@@ -1,0 +1,80 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+
+% --- Palette Colori Modalità Chiara ---
+\definecolor{lightbg}{RGB}{246, 248, 250}
+\definecolor{framecolor}{RGB}{208, 215, 222}
+\definecolor{keywordblue}{RGB}{5, 80, 174}
+\definecolor{commentgreen}{RGB}{87, 140, 89}
+\definecolor{stringred}{RGB}{163, 21, 21}
+\definecolor{textdark}{RGB}{36, 41, 46}
+\definecolor{linenumber}{RGB}{140, 148, 158}
+\definecolor{funcpurple}{RGB}{111, 66, 193}
+
+% --- Configurazione dello stile base di listings ---
+\lstdefinestyle{lightstyle}{
+    language=Python,
+    basicstyle=\ttfamily\small\color{textdark},
+    keywordstyle=\color{keywordblue}\bfseries,
+    commentstyle=\color{commentgreen}\itshape,
+    stringstyle=\color{stringred},
+    numberstyle=\tiny\color{linenumber},
+    numbers=left,
+    numbersep=10pt,
+    xleftmargin=20pt,
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=4,
+    frame=none,
+    emph={QR_eigensolver, np, len, range, QR_dec, allclose, print, diag},
+    emphstyle=\color{funcpurple}
+}
+
+% --- Creazione dell'ambiente personalizzato per il riquadro ---
+\newtcblisting{elegantcode}[1][]{
+    listing only,
+    listing style=lightstyle,
+    colback=lightbg,
+    colframe=framecolor,
+    colbacktitle=lightbg,
+    coltitle=textdark,
+    fonttitle=\bfseries\sffamily,
+    bottomtitle=2pt,
+    toptitle=4pt,
+    titlerule=0.4pt,
+    boxrule=0.8pt,
+    arc=4mm,
+    auto outer arc,
+    left=5pt,
+    right=10pt,
+    top=5pt,
+    bottom=5pt,
+    drop shadow=black!5,
+    #1
+}
+
+\begin{document}
+
+\begin{elegantcode}[title={Implementazione in Python del QR Eigensolver}]
+def QR_eigensolver(A_in, tol=1e-14, N_max=int(1e6)):
+    Ak = np.copy(A_in)
+    n = len(Ak)
+    Qk = np.eye(n)
+    for i in range(N_max):
+        Q, R = QR_dec(Ak)
+        Ak_old = np.copy(Ak)
+        Ak = R @ Q
+        
+        if np.allclose(Ak, Ak_old, rtol=tol):
+            print(f'Tolerance reached at step {i+1}')
+            eigenVal = np.diag(Ak)
+            eigenVect = Qk
+            return eigenVal, eigenVect    # We are interested in the columns
+\end{elegantcode}
+
+\end{document}

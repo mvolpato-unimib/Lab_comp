@@ -184,3 +184,32 @@ def Secant_mth(func, x0, x1, tol=1e-14, MaxIter=500):
     return x, n_iter, np.array(sol_ls)
 
 
+
+def root_finder(cn, rand_shift=True, shift=1, nmax=1e3):
+    from lib_algebra import QR_eigensolver  
+    # the algorithm works with a vector of params ordered from c0, to cn 
+    # where P(x) = c0 + c1*x + ... + cn*x^n 
+    # [cn, ... , c0] ----> [c0, ... , cn]   
+    cn = np.flip(cn)            
+
+    cn_bar = cn / cn[-1]
+    diag_mat = np.eye(len(cn)-2, len(cn)-1, k=1) 
+    min_coeff = (-1) * cn_bar[:-1]
+    comp_mat = np.vstack((diag_mat, min_coeff))
+
+    eigens = None
+
+    if rand_shift:
+        while eigens is None:
+            current_shift = np.random.rand()   
+            shifted_mat = comp_mat + current_shift * np.eye(len(comp_mat))
+            try:
+                results = QR_eigensolver(shifted_mat, N_max=nmax)
+                eigens = np.real(results[0] - current_shift)
+            except:
+                pass
+    else:    
+        shifted_mat = comp_mat + shift * np.eye(len(comp_mat))
+        eigens = np.real(QR_eigensolver(shifted_mat, N_max=nmax)[0] - shift)
+    
+    return np.sort(eigens)

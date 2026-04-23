@@ -1,0 +1,33 @@
+class DFT:
+    def __init__(self, x_desc):
+        N = len(x_desc)
+        L = (x_desc[-1] - x_desc[0])
+
+        if N % 2 == 0:
+            p_pos = np.arange(N//2+1)   # positive values bcs of Niquist (even)
+            p_neg = np.arange(1, N - (N//2)) * (-1)
+        else:
+            p_pos = np.arange(N//2)     # positive values bcs of Niquist (odd)
+            p_neg = np.arange(1, N - (N//2)) * (-1)
+
+        p = 2 * np.pi / L * np.concatenate((p_pos, p_neg))
+        W = np.exp(1j * np.outer(p, x_desc))
+
+        self.W = W
+        self.p = p
+        self.N = N
+        self.L = L
+        self.dx = L / N
+
+    def dft(self, y_desc):
+        if type(y_desc)==int or len(y_desc) != self.N:
+            raise ValueError('len(y_desc) must be equal to len(x_desc)!')
+        y_dft = self.dx * self.W @ y_desc
+        return y_dft
+
+    def idft(self, y_desc):
+        if type(y_desc)==int or len(y_desc) != self.N:
+            raise ValueError('len(y_desc) must be equal to len(x_desc)!')
+        y_idft = self.L**(-1) * self.W.conj().T @ y_desc
+        return y_idft
+
