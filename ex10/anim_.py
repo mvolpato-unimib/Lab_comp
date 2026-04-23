@@ -63,6 +63,6 @@ def update(frame):
 ani = FuncAnimation(fig, update, frames=len(times), interval=50)
 
 plt.tight_layout()
-ani.save('ani_col.gif', writer='pillow')
-ani.save('ani_col.mp4', writer='ffmpeg')
+ani.save('plots/ani_col.gif', writer='pillow')
+ani.save('plots/ani_col.mp4', writer='ffmpeg')
 plt.show()
