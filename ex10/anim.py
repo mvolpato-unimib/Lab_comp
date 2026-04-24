@@ -31,8 +31,7 @@ udf_0 = heat_dft.dft(u0)
 
 fig, ax = plt.subplots()
 line, = ax.plot([], [], lw=2)
-time_text = ax.text(0.75, 0.9, '', transform=ax.transAxes, 
-                    bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
+time_text = ax.text(0.75, 0.9, '', transform=ax.transAxes, fontsize=12, fontweight='bold')
 ax.set_xlim(0, Lmax)
 ax.set_ylim(-1.2, 1.2)
 ax.set_xlabel(r'$x$')
@@ -54,6 +53,6 @@ def update(frame):
 ani = FuncAnimation(fig, update, frames=len(times), interval=50)
 
 plt.tight_layout()
-ani.save('ani_blue.gif', writer='pillow')
-ani.save('ani_blue.mp4', writer='ffmpeg')
+ani.save('plots/ani_blue.gif', writer='pillow')
+ani.save('plots/ani_blue.mp4', writer='ffmpeg')
 plt.show()

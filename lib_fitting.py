@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import lib_plot
 
 def Direct_mth(xarr, yarr, N_points=1000):
     from lib_algebra import QR_solver
@@ -72,6 +73,8 @@ def lin_fit(x, y, covar, linfunc):
     r = y - X @ pars
     Chi2 = np.real(r.T @ W @ r)
     dof = len(x) - len(linfunc)
+    print('dof =', dof)
+    print()
     p = chi2.sf(Chi2, dof)
 
     return list(pars), np.real(cov_par), Chi2, p
@@ -93,7 +96,7 @@ def eval_Par(par_func, old_pars, old_cov_pars):
 
 def plot_fit (f, x_sc, y_sc, yerr, params, cov_par,
               start, stop, fit_name='Fit function', nsigma=1,
-              xlab='X COO', ylab='Y COO', ):
+              xlab='X COO', ylab='Y COO', save_name='plots/plot.png'):
     eps = 1e-8
     x_plot = np.linspace(start, stop, 500)
     y_plot = np.array([f(x, *params) for x in x_plot])
@@ -111,8 +114,9 @@ def plot_fit (f, x_sc, y_sc, yerr, params, cov_par,
 
     plt.plot(x_plot, f(x_plot, *params), label=fit_name, color='red')
     plt.errorbar(x_sc, y_sc, yerr=yerr, fmt='o', label='Dati')
-    plt.fill_between(x_plot, y_plot+sy, y_plot-sy, alpha=0.2, color='red', label=rf'Banda di errore a ${nsigma}\sigma$')
+    plt.fill_between(x_plot, y_plot+sy, y_plot-sy, alpha=0.2, color='red', label=rf'Errore a ${nsigma}\sigma$')
     plt.xlabel(xlab)
     plt.ylabel(ylab)
     plt.legend()
+    plt.savefig(save_name)
     plt.show()
