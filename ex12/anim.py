@@ -89,12 +89,8 @@ plt.legend(
     markerscale=0.5
 )
 
-# print("Salvataggio in corso...")
-# try:
-#     # Usiamo fps=30 e riduciamo il carico se necessario
-#     ani.save('plots/anim_orbita.gif', writer='pillow', fps=30)
-#     print("Salvataggio completato!")
-# except Exception as e:
-#     print(f"Errore durante il salvataggio: {e}")
 
+plt.tight_layout()
+ani.save('plots/ani_kep.gif', writer='pillow')
+ani.save('plots/ani_kep.mp4', writer='ffmpeg')
 plt.show()

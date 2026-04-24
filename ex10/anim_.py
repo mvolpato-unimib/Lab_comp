@@ -35,8 +35,7 @@ lc.set_norm(plt.Normalize(-1.2, 1.2))
 ax.add_collection(lc)
 # ----------------------------------------------------------------
 
-time_text = ax.text(0.75, 0.9, '', transform=ax.transAxes, 
-                    bbox=dict(facecolor='white', alpha=0.5, edgecolor='black'))
+time_text = ax.text(0.75, 0.9, '', transform=ax.transAxes, fontsize=12, fontweight='bold')
 ax.set_xlim(0, Lmax)
 ax.set_ylim(-1.2, 1.2)
 ax.set_xlabel(r'$x$')
