@@ -44,7 +44,7 @@ def Part_dervs(func, params, eps=1e-8):
     return part_der
 
 
-def bisec(f, a, b, optim=True, tol=1e-14, out_niter=False, out_story=False, MaxIter=500):
+def bisec(f, a, b, optim=True, tol=1e-8, out_niter=False, out_story=False, MaxIter=500):
     a_og, b_og = [a, b]
     fa, fb = f(a), f(b)
     if fa * fb > 0:
