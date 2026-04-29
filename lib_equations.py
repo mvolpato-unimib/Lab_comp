@@ -213,3 +213,67 @@ def root_finder(cn, rand_shift=True, shift=1, nmax=1e3):
         eigens = np.real(QR_eigensolver(shifted_mat, N_max=nmax)[0] - shift)
     
     return np.sort(eigens)
+
+
+
+def euler(f_xy, y0, x):
+    leny = len(y0) if not np.isscalar(y0) else 1
+    sols_y = np.zeros((len(x), leny))
+    sols_y[0] = y0
+    for i in range(len(x) - 1):
+        h = x[i+1] - x[i]
+        sols_y[i+1] = sols_y[i] + h * f_xy(x[i], sols_y[i])
+    return sols_y
+
+
+
+
+def back_euler(f_xy, y0, x):
+    from lib_equations import Secant_mth
+    leny = len(y0) if not np.isscalar(y0) else 1
+    sols = np.zeros((len(x), leny))
+    sols[0] = y0
+    for i in range(len(x) - 1):
+        h = x[i+1] - x[i]
+        y = lambda eta_p1: eta_p1 - sols[i] - h*f_xy(x[i+1], eta_p1)
+        
+        sol = Secant_mth(y, x[i], x[i+1])
+        sols[i+1] = sol[0]
+    return sols
+
+
+
+
+def rk2(f_xy, y0, x):
+    leny = len(y0) if not np.isscalar(y0) else 1
+    sols_y = np.zeros((len(x), leny))
+    sols_y[0] = y0
+    for i in range(len(x) - 1):
+        h = x[i+1] - x[i]
+        # RK coefficients
+        k1 = f_xy(x[i], sols_y[i])
+        k2 = f_xy(x[i] + h/2, sols_y[i] + h* k1 /2)
+
+        sols_y[i+1] = sols_y[i] + h * k2
+    return sols_y
+
+
+
+
+
+def rk4(f_xy, y0, x):
+    leny = len(y0) if not np.isscalar(y0) else 1
+    sols_y = np.zeros((len(x), leny))
+    sols_y[0] = y0
+    for i in range(len(x) - 1):
+        h = x[i+1] - x[i]
+        # RK coefficients
+        k1 = f_xy(x[i], sols_y[i])
+        k2 = f_xy(x[i] + h/2, sols_y[i] + h* k1 /2)
+        k3 = f_xy(x[i] + h/2, sols_y[i] + h* k2 /2)
+        k4 = f_xy(x[i+1], sols_y[i] + h* k3)
+
+        phi = 1/6 * (k1 + 2*k2 + 2*k3 +k4)
+
+        sols_y[i+1] = sols_y[i] + h * phi
+    return sols_y
