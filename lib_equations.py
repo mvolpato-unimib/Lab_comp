@@ -3,6 +3,12 @@ import matplotlib.pyplot as plt
 
 class DFT:
     def __init__(self, x_desc):
+        """Initializes the Discrete Fourier Transform (DFT) object.
+
+        Args:
+            x_desc (array-like): A 1D array of spatial or temporal coordinates.
+        """
+
         N = len(x_desc)
         L = (x_desc[-1] - x_desc[0])
         
@@ -23,28 +29,51 @@ class DFT:
         self.dx = L / N
     
     def dft(self, y_desc):
+        """Computes the Discrete Fourier Transform.
+
+        Args:
+            y_desc (array-like): A 1D array of signal values corresponding to the initialized coordinates.
+        """
+
         if type(y_desc)==int or len(y_desc) != self.N:
             raise ValueError('len(y_desc) must be equal to len(x_desc)!!')
         y_dft = self.dx * self.W @ y_desc
         return y_dft
 
     def idft(self, y_desc):
+        """Computes the Inverse Discrete Fourier Transform.
+
+        Args:
+            y_desc (array-like): A 1D array of frequency domain values to invert.
+        """
+
         if type(y_desc)==int or len(y_desc) != self.N:
             raise ValueError('len(y_desc) must be equal to len(x_desc)!!')
         y_idft = self.L**(-1) * self.W.conj().T @ y_desc
         return y_idft
 
 
-def Part_dervs(func, params, eps=1e-8):
-    part_der = []
-    for i, p in enumerate(params):
-        diff_pars = params.copy()
-        diff_pars[i] += eps
-        part_der.append((func(*diff_pars) - func(*params))/eps)
-    return part_der
+
+
+# ----------------------------------------------------------
+# ROOT FINDERS
+# ----------------------------------------------------------
 
 
 def bisec(f, a, b, optim=True, tol=1e-8, out_niter=False, out_story=False, MaxIter=500):
+    """Finds a root of a function within a specified interval using the bisection method.
+
+    Args:
+        f (callable): The continuous function for which to find a root.
+        a (float): The lower bound of the interval.
+        b (float): The upper bound of the interval.
+        optim (bool, optional): If True, uses a secant-like optimization for the midpoint. Defaults to True.
+        tol (float, optional): The tolerance for convergence. Defaults to 1e-8.
+        out_niter (bool, optional): If True, returns the number of iterations performed alongside the root. Defaults to False.
+        out_story (bool, optional): If True, returns the history of root approximations. Defaults to False.
+        MaxIter (int, optional): The maximum allowed iterations before termination. Defaults to 500.
+    """
+
     a_og, b_og = [a, b]
     fa, fb = f(a), f(b)
     if fa * fb > 0:
@@ -89,7 +118,19 @@ def bisec(f, a, b, optim=True, tol=1e-8, out_niter=False, out_story=False, MaxIt
         return c
 
 
+
+
 def Newt_Rap(func, der_func, x0, tol=1e-14, MaxIter=500):
+    """Finds a root of a function using the Newton-Raphson method.
+
+    Args:
+        func (callable): The target function for which to find a root.
+        der_func (callable): The analytical derivative of the target function.
+        x0 (float or array-like): The initial guess(es) for the root.
+        tol (float, optional): The tolerance for convergence. Defaults to 1e-14.
+        MaxIter (int, optional): The maximum allowed iterations. Defaults to 500.
+    """
+
     from collections.abc import Iterable
     
     # if input is iterable, list, tuple, np array, ecc.
@@ -157,7 +198,19 @@ def Newt_Rap(func, der_func, x0, tol=1e-14, MaxIter=500):
 
 
 
+
+
 def Secant_mth(func, x0, x1, tol=1e-14, MaxIter=500):
+    """Finds a root of a function using the secant method.
+
+    Args:
+        func (callable): The target function for which to find a root.
+        x0 (float): The first initial guess.
+        x1 (float): The second initial guess.
+        tol (float, optional): The tolerance for convergence. Defaults to 1e-14.
+        MaxIter (int, optional): The maximum allowed iterations. Defaults to 500.
+    """
+
     der_func = lambda x, x_prev: (func(x) - func(x_prev)) / (x - x_prev)
     n_iter = 0
     x_prev = x0
@@ -185,7 +238,18 @@ def Secant_mth(func, x0, x1, tol=1e-14, MaxIter=500):
 
 
 
+
+
 def root_finder(cn, rand_shift=True, shift=1, nmax=1e3):
+    """Finds the roots of a polynomial by computing the eigenvalues of its companion matrix.
+
+    Args:
+        cn (array-like): The polynomial coefficients, ordered from highest to lowest degree.
+        rand_shift (bool, optional): If True, applies a random shift to improve eigensolver stability. Defaults to True.
+        shift (float, optional): A fixed shift to apply if rand_shift is False. Defaults to 1.
+        nmax (int or float, optional): The maximum number of iterations for the QR eigensolver. Defaults to 1e3.
+    """
+
     from lib_algebra import QR_eigensolver  
     # the algorithm works with a vector of params ordered from c0, to cn 
     # where P(x) = c0 + c1*x + ... + cn*x^n 
@@ -214,9 +278,48 @@ def root_finder(cn, rand_shift=True, shift=1, nmax=1e3):
     
     return np.sort(eigens)
 
+# ----------------------------------------------------------
+# END ROOT FINDERS
+# ----------------------------------------------------------
+
+
+
+
+
+# ----------------------------------------------------------
+# RESOLUTION OF DIFFERENTIAL EQUATIONS
+# ----------------------------------------------------------
+
+
+
+def Part_dervs(func, params, eps=1e-8):
+    """Calculates the partial derivatives of a function using finite differences.
+
+    Args:
+        func (callable): The target function to differentiate.
+        params (list or array-like): The sequence of parameters at which to evaluate the derivatives.
+        eps (float, optional): The step size for the finite difference approximation. Defaults to 1e-8.
+    """
+
+    part_der = []
+    for i, p in enumerate(params):
+        diff_pars = params.copy()
+        diff_pars[i] += eps
+        part_der.append((func(*diff_pars) - func(*params))/eps)
+    return part_der
+
+
 
 
 def euler(f_xy, y0, x):
+    """Solves an ordinary differential equation using the explicit Euler method.
+
+    Args:
+        f_xy (callable): The derivative function f(x, y) defining the ODE.
+        y0 (float or array-like): The initial condition(s) at the starting point.
+        x (array-like): The grid of independent variable points at which to evaluate the solution.
+    """
+
     leny = len(y0) if not np.isscalar(y0) else 1
     sols_y = np.zeros((len(x), leny))
     sols_y[0] = y0
@@ -229,6 +332,14 @@ def euler(f_xy, y0, x):
 
 
 def back_euler(f_xy, y0, x):
+    """Solves an ordinary differential equation using the backward (implicit) Euler method.
+
+    Args:
+        f_xy (callable): The derivative function f(x, y) defining the ODE.
+        y0 (float or array-like): The initial condition(s) at the starting point.
+        x (array-like): The grid of independent variable points at which to evaluate the solution.
+    """
+
     from lib_equations import Secant_mth
     leny = len(y0) if not np.isscalar(y0) else 1
     sols = np.zeros((len(x), leny))
@@ -245,6 +356,14 @@ def back_euler(f_xy, y0, x):
 
 
 def rk2(f_xy, y0, x):
+    """Solves an ordinary differential equation using the second-order Runge-Kutta method.
+
+    Args:
+        f_xy (callable): The derivative function f(x, y) defining the ODE.
+        y0 (float or array-like): The initial condition(s) at the starting point.
+        x (array-like): The grid of independent variable points at which to evaluate the solution.
+    """
+
     leny = len(y0) if not np.isscalar(y0) else 1
     sols_y = np.zeros((len(x), leny))
     sols_y[0] = y0
@@ -262,6 +381,14 @@ def rk2(f_xy, y0, x):
 
 
 def rk4(f_xy, y0, x):
+    """Solves an ordinary differential equation using the fourth-order Runge-Kutta method.
+
+    Args:
+        f_xy (callable): The derivative function f(x, y) defining the ODE.
+        y0 (float or array-like): The initial condition(s) at the starting point.
+        x (array-like): The grid of independent variable points at which to evaluate the solution.
+    """
+
     leny = len(y0) if not np.isscalar(y0) else 1
     sols_y = np.zeros((len(x), leny))
     sols_y[0] = y0
@@ -277,3 +404,9 @@ def rk4(f_xy, y0, x):
 
         sols_y[i+1] = sols_y[i] + h * phi
     return sols_y
+
+# ----------------------------------------------------------
+# RESOLUTION OF DIFFERENTIAL EQUATIONS
+# ----------------------------------------------------------
+
+

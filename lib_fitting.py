@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 import lib_plot
 
 def Direct_mth(xarr, yarr, N_points=1000):
+    """Solves for polynomial coefficients directly using a Vandermonde matrix.
+
+    Args:
+        xarr (array-like): The x-coordinates of the data points.
+        yarr (array-like): The y-coordinates of the data points.
+        N_points (int, optional): The number of evaluation points to generate for the resulting curve. Defaults to 1000.
+    """
+
     from lib_algebra import QR_solver
 
     ls = []
@@ -24,6 +32,13 @@ class Lagrange:
     :param y: Coordinates y of the points
     """
     def __init__(self, x, f):
+        """Initializes the Lagrange interpolation object.
+
+        Args:
+            x (array-like): The x-coordinates of the known data points.
+            f (array-like): The y-coordinates (function values) of the known data points.
+        """
+
         self.x = x
         self.f = f
         n = len(x)
@@ -36,14 +51,25 @@ class Lagrange:
         self.w = np.array(w_arr)
 
     def __call__(self, x0):
+        """Evaluates the Lagrange polynomial at a given coordinate.
+
+        Args:
+            x0 (float or array-like): The x-coordinate(s) at which to evaluate the interpolation.
+        """
+
         frac = self.w / (x0 - self.x)
         return np.sum(self.f * frac) / np.sum(frac)
     
 
 def lagrange_int(x, f, N_points=1000):
+    """Generates coordinates for a smooth curve using Lagrange interpolation.
+
+    Args:
+        x (array-like): The x-coordinates of the reference data points.
+        f (array-like): The y-coordinates of the reference data points.
+        N_points (int, optional): The number of interpolated points to generate. Defaults to 1000.
     """
-    Function that extract the points from the interpolation of f, useful for drawing with plt 
-    """
+
     lag = Lagrange(x, f)
     xoff = 0.001*(max(x) - min(x))
     x_in = np.linspace(x[0]-xoff, x[-1]+xoff, N_points)
@@ -53,11 +79,26 @@ def lagrange_int(x, f, N_points=1000):
     return x_in, np.array(y_in)
 
 def Cheby_nodes(dim):
+    """Calculates Chebyshev nodes for a given dimension in the domain [-1, 1].
+
+    Args:
+        dim (int): The number of Chebyshev nodes to generate.
+    """
+
     j = np.arange(dim)
     return -np.cos(j*np.pi / (dim-1))
 
 
 def fit_engine(x, y, covar, poly_order):
+    """Performs a generalized linear least-squares fit for a polynomial.
+
+    Args:
+        x (array-like): The independent variable data points.
+        y (array-like): The dependent variable data points.
+        covar (array-like): The covariance matrix of the y-data.
+        poly_order (int): The degree of the polynomial to fit.
+    """
+
     from scipy.stats import chi2
     from lib_algebra import mat_inv, BackChol
     
@@ -89,6 +130,14 @@ def fit_engine(x, y, covar, poly_order):
     
 
 def eval_Par(par_func, old_pars, old_cov_pars):
+    """Propagates parameters and their covariance matrix through a set of functions using the Jacobian.
+
+    Args:
+        par_func (list of callables): A list of functions defining the new parameters in terms of the old ones.
+        old_pars (array-like): The original parameter values.
+        old_cov_pars (array-like): The covariance matrix of the original parameters.
+    """
+
     from lib_equations import Part_dervs
     J_mat_ls = []
     new_pars = []
@@ -105,6 +154,24 @@ def eval_Par(par_func, old_pars, old_cov_pars):
 def plot_fit (f, x_sc, y_sc, yerr, params, cov_par,
               start, stop, fit_name='Fit function', nsigma=1,
               xlab='X COO', ylab='Y COO', save_name='plots/plot.png'):
+    """Plots a fitted function against scatter data, complete with error bars and a confidence band.
+
+    Args:
+        f (callable): The fit function to plot.
+        x_sc (array-like): The x-coordinates of the data points.
+        y_sc (array-like): The y-coordinates of the data points.
+        yerr (array-like): The standard errors of the y-coordinates.
+        params (array-like): The fitted parameters to pass to the function f.
+        cov_par (array-like): The covariance matrix of the fitted parameters.
+        start (float): The starting x-value for the plotted fit line.
+        stop (float): The ending x-value for the plotted fit line.
+        fit_name (str, optional): The legend label for the fit line. Defaults to 'Fit function'.
+        nsigma (float, optional): The number of standard deviations for the error band width. Defaults to 1.
+        xlab (str, optional): The label for the x-axis. Defaults to 'X COO'.
+        ylab (str, optional): The label for the y-axis. Defaults to 'Y COO'.
+        save_name (str, optional): The file path to save the generated plot. Defaults to 'plots/plot.png'.
+    """
+
     eps = 1e-8
     x_plot = np.linspace(start, stop, 500)
     y_plot = np.array([f(x, *params) for x in x_plot])
@@ -137,6 +204,25 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
              mar='.', col='red', name_points='name points',
              labels=[r'x', r'y'], nsigma=3, lims=None, 
              ErrTrue=True, save_name=None, write_formula=False):
+    """Executes a polynomial fit and plots the results with customizable styling and confidence intervals.
+
+    Args:
+        x (array-like): The independent variable data points.
+        y (array-like): The dependent variable data points.
+        cov (array-like): The covariance matrix of the data.
+        poly_order (int): The order of the polynomial to fit.
+        name_pars (list of str, optional): Parameter names to print in the console output. Defaults to None.
+        mar (str, optional): The matplotlib marker style for the data points. Defaults to '.'.
+        col (str, optional): The color used for the plot elements. Defaults to 'red'.
+        name_points (str, optional): The legend label for the scatter data. Defaults to 'name points'.
+        labels (list of str, optional): The axis labels [x_label, y_label]. Defaults to [r'x', r'y'].
+        nsigma (float, optional): The number of standard deviations for the error band. Defaults to 3.
+        lims (list or tuple, optional): The [min, max] limits for both x and y axes. Defaults to None.
+        ErrTrue (bool, optional): If True, plots error bars and the confidence band. Defaults to True.
+        save_name (str, optional): The file path to save the plot image. Defaults to None.
+        write_formula (bool, optional): If True, includes the polynomial formula and values in the legend. Defaults to False.
+    """
+
     import matplotlib.patches as mpatches
 
     yerr = np.sqrt(np.diag(cov))
@@ -149,9 +235,9 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
         for i, name in enumerate(name_pars):
             print(f'{name} = {pars[i]:.2e} +/- {err_pars[i]:.3e}')
         print()
-        print(f'Chi2 = {chi2:.1f}')
-        print(f'p-val = {pval:.2f}')
 
+    print(f'Chi2 = {chi2:.2f}')
+    print(f'p-val = {pval:.2f}')
 
     # from a list of linear functions: [a, b*x, c*x^2, ...]
     # extract a single lambda func that represent: f(x) = a + b*x + c*x^2 + ...
@@ -207,11 +293,11 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
         labels.append(label_text)
 
     # fit formula
-    letters = ['a', 'b', 'c', 'd']
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
     if write_formula:
         fit_form = r'$f(x) = a'
-        for i in range(1, poly_order): 
+        for i in range(1, poly_order+1): 
             if i == 1:
                 fit_form += f' + {letters[i]}x'
             else:

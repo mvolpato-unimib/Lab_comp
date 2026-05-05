@@ -5,6 +5,14 @@ import numpy as np
 # ----------------------------------------------------------
 
 def forw_subst(L_in, b_in, speak=False):
+    """Solves a lower triangular linear system using forward substitution.
+
+    Args:
+        L_in (array-like): The lower triangular coefficient matrix.
+        b_in (array-like): The right-hand side vector.
+        speak (bool, optional): If True, prints the solution to the console. Defaults to False.
+    """
+
     L = np.copy(L_in)
     b = np.copy(b_in)
 
@@ -29,6 +37,14 @@ def forw_subst(L_in, b_in, speak=False):
 
 
 def back_subst(U_in, b_in, speak=False):
+    """Solves an upper triangular linear system using backward substitution.
+
+    Args:
+        U_in (array-like): The upper triangular coefficient matrix.
+        b_in (array-like): The right-hand side vector.
+        speak (bool, optional): If True, prints the solution to the console. Defaults to False.
+    """
+
     U = np.copy(U_in)
     b = np.copy(b_in)
     n = len(U)
@@ -52,6 +68,14 @@ def back_subst(U_in, b_in, speak=False):
 
 
 def BackGauss_dumb(A_in, b_in, speak=False): 
+    """Solves a linear system using standard Gaussian elimination without pivoting.
+
+    Args:
+        A_in (array-like): The coefficient matrix.
+        b_in (array-like): The right-hand side vector.
+        speak (bool, optional): If True, prints the solution to the console. Defaults to False.
+    """
+
     A = np.copy(A_in)
     b = np.copy(b_in)
     n = np.shape(A)[0]
@@ -64,6 +88,14 @@ def BackGauss_dumb(A_in, b_in, speak=False):
 
 
 def BackGauss(A_in, b_in, speak=False):
+    """Solves a linear system using Gaussian elimination with partial pivoting.
+
+    Args:
+        A_in (array-like): The coefficient matrix.
+        b_in (array-like): The right-hand side vector.
+        speak (bool, optional): If True, prints the solution to the console. Defaults to False.
+    """
+
     A = np.array(A_in, dtype=complex)
     b = np.array(b_in, dtype=complex)
     n = np.shape(A)[0]
@@ -88,7 +120,11 @@ def BackGauss(A_in, b_in, speak=False):
 
 def LU_dec(A_in):
     """Performs LU decomposition on a given A matrix.
-    Registers also piv_sign, the sign of the Determinant given by the pivoting operations"""
+    Registers also piv_sign, the sign of the Determinant given by the pivoting operations
+    
+    Args:
+        A_in (array-like): The square matrix to decompose.
+    """
 
     U = np.copy(A_in)
     n = np.shape(U)[0]
@@ -115,6 +151,12 @@ def LU_dec(A_in):
 
 
 def chol_fact(A):
+    """Performs Cholesky factorization on a symmetric matrix.
+
+    Args:
+        A (array-like): The symmetric positive-definite square matrix to factorize.
+    """
+
     n = np.shape(A)
     # Must be a square matrix
     if A.shape[0] != A.shape[1]:
@@ -141,6 +183,13 @@ def chol_fact(A):
 
 
 def BackChol(A, b):
+    """Solves a linear system using Cholesky factorization.
+
+    Args:
+        A (array-like): The symmetric positive-definite coefficient matrix.
+        b (array-like): The right-hand side vector.
+    """
+
     L = chol_fact(A)
     y = forw_subst(L, b)
     x = back_subst(L.T.conj(), y)
@@ -148,7 +197,12 @@ def BackChol(A, b):
 
 
 def householder_2x2(A_input):
-    """returns the Projector P_v for a matrix 2x2, householder projector method"""
+    """Generates a Householder projector matrix for a 2x2 matrix.
+
+    Args:
+        A_input (array-like): A 2x2 input matrix.
+    """
+
     A = np.copy(A_input)
     u = np.copy(A[:,0])  # initially set as first column of A and then added the term plus/minus
     n = np.sqrt(np.real(u.T.conj() @ u))
@@ -160,6 +214,12 @@ def householder_2x2(A_input):
     return P
 
 def QR_dec(A_input):
+    """Performs QR decomposition on a given matrix using Householder reflections.
+
+    Args:
+        A_input (array-like): The matrix to decompose.
+    """
+
     dim = len(A_input)
     R = np.copy(A_input)
     Q = np.eye(dim)
@@ -186,9 +246,13 @@ def QR_dec(A_input):
 
 
 def QR_solver(A, b):
+    """Solves a linear system using QR decomposition and backward substitution.
+
+    Args:
+        A (array-like): The coefficient matrix.
+        b (array-like): The right-hand side vector.
     """
-    Solve a linear system using QR decomposition and Backward substitution.
-    """
+
     Q,R = QR_dec(A)
     x_sol = back_subst(R, Q.T.conj() @ b)
     return x_sol 
@@ -210,6 +274,10 @@ def determinant(A_in, choice='QR'):
     - QR decomposition
 
     The standard is QR, chosen for the best stability
+    
+    Args:
+        A_in (array-like): The square matrix to evaluate.
+        choice (str, optional): The decomposition method to use ('QR', 'LU', or 'Cholesky'). Defaults to 'QR'.
     """
 
     if choice=='LU':
@@ -265,9 +333,12 @@ def determinant(A_in, choice='QR'):
 # ----------------------------------------------------------
 
 def mat_inv(A):
+    """Computes the inverse of a square matrix using Gaussian elimination.
+
+    Args:
+        A (array-like): The square matrix to invert.
     """
-    Computes inverse of a matrix.
-    """
+
     n = A.shape[0]
     A_inv = np.zeros_like(A, dtype=complex)
     
@@ -298,6 +369,14 @@ def mat_inv(A):
 # ----------------------------------------------------------
 
 def power_mth(A_in, epsilon=1e-14, N_max=10000):
+    """Finds the dominant eigenvalue and corresponding eigenvector using the power method.
+
+    Args:
+        A_in (array-like): The square matrix to analyze.
+        epsilon (float, optional): The tolerance for convergence. Defaults to 1e-14.
+        N_max (int, optional): The maximum number of iterations allowed. Defaults to 10000.
+    """
+
     A = np.copy(A_in)
     eigVal = 1
     eigVect = np.ones(len(A))
@@ -327,6 +406,14 @@ def power_mth(A_in, epsilon=1e-14, N_max=10000):
 
 
 def inv_power_mth(A_in, epsilon=1e-14, N_max=10000):
+    """Finds the eigenvalue with the smallest magnitude using the inverse power method.
+
+    Args:
+        A_in (array-like): The square matrix to analyze.
+        epsilon (float, optional): The tolerance for convergence. Defaults to 1e-14.
+        N_max (int, optional): The maximum number of iterations allowed. Defaults to 10000.
+    """
+
     A = np.copy(A_in)
     Q, R = QR_dec(A)
     # x_k+1 = A^-1 x --> A x_k+1 = x --> Q R x_k+1 = x --> 
@@ -367,6 +454,14 @@ def inv_power_mth(A_in, epsilon=1e-14, N_max=10000):
 
 
 def QR_eigensolver(A_in, tol=1e-14, N_max=1e4):
+    """Computes the eigenvalues and eigenvectors of a matrix using the iterative QR algorithm.
+
+    Args:
+        A_in (array-like): The square matrix to analyze.
+        tol (float, optional): The tolerance for convergence of the off-diagonal elements. Defaults to 1e-14.
+        N_max (int or float, optional): The maximum number of iterations allowed. Defaults to 1e4.
+    """
+
     import warnings
     N_max = int(N_max)
     Ak = np.copy(A_in)
@@ -398,6 +493,11 @@ def QR_eigensolver(A_in, tol=1e-14, N_max=1e4):
 # START UTILITIES
 # ----------------------------------------------------------
 def tridiagonal (N_points):
+    """Generates a standard tridiagonal matrix with 2s on the main diagonal and -1s on the adjacent diagonals.
+
+    Args:
+        N_points (int): The size (number of rows and columns) of the square matrix.
+    """
     return 2*np.eye(N_points) - (np.eye(N_points, k=-1) + np.eye(N_points, k=1))
 
 # ----------------------------------------------------------
