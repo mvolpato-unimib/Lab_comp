@@ -203,7 +203,8 @@ def plot_fit (f, x_sc, y_sc, yerr, params, cov_par,
 def lin_fit (x, y, cov, poly_order, name_pars=None, 
              mar='.', col='red', name_points='name points',
              labels=[r'x', r'y'], nsigma=3, lims=None, 
-             ErrTrue=True, save_name=None, write_formula=False):
+             ErrTrue=True, save_name=None, write_formula=False,
+             figsz=(8, 5), true_val_student=None):
     """Executes a polynomial fit and plots the results with customizable styling and confidence intervals.
 
     Args:
@@ -221,9 +222,12 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
         ErrTrue (bool, optional): If True, plots error bars and the confidence band. Defaults to True.
         save_name (str, optional): The file path to save the plot image. Defaults to None.
         write_formula (bool, optional): If True, includes the polynomial formula and values in the legend. Defaults to False.
+        figsz (tuple, optional): Size of the figure plotted in the form of (x, y). Default to (8, 5)
+        true_val_student (array-like): Array of the expected values for the parameters of the fit for a t-Student test, if None test is not performed. Default to None
     """
 
     import matplotlib.patches as mpatches
+    from scipy import stats
 
     yerr = np.sqrt(np.diag(cov))
     fit_res = fit_engine(x, y, cov, poly_order)
@@ -239,6 +243,28 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
     print(f'Chi2 = {chi2:.2f}')
     print(f'p-val = {pval:.2f}')
 
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    if true_val_student is not None:
+        print('\n\n-----------------------------------------')
+        print('t-Student TEST:')
+        for i in range(len(pars)):
+            true_val = true_val_student[i]
+            exp_val = pars[i]
+            sigma = err_pars[i]
+            dof = len(x) - len(pars)
+            
+            t_val = abs(exp_val - true_val) / sigma
+            
+            p_value_t = 2 * stats.t.sf(t_val, dof)
+            
+            print(f'\nParametro {letters[i]}:')
+            print(f'  Atteso  = {true_val}')
+            print(f'  Fit     = {exp_val} ± {sigma}')
+            print(f'  t-obs   = {t_val:.4f}')
+            print(f'  p-value = {p_value_t:.4f} --> {p_value_t*100:.2f}%')
+        print('-----------------------------------------')
+
+
     # from a list of linear functions: [a, b*x, c*x^2, ...]
     # extract a single lambda func that represent: f(x) = a + b*x + c*x^2 + ...
     def f(x_coo, parameters):
@@ -248,7 +274,7 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
     eps = 1e-14
     start, stop = [min(x), max(x)]
     x_plot = np.linspace(start, stop, 500)
-    y_plot = np.array([f(x, pars) for x in x_plot])
+    y_plot = f(x_plot, pars)
     J_mat_ls = []
     for x_ele in x_plot:
         part_der = []
@@ -263,13 +289,13 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
 
 
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=figsz)
     # plot of:
     #     - Fit 
     #     - Points w/Errorbar
     #     - Error Band
 
-    ax.plot(x_plot, f(x_plot, pars), label='Fit '+ name_points, color=col,
+    ax.plot(x_plot, f(x_plot, pars), label='Fit', color=col,
             alpha=0.4, zorder=0, ls='--')
     if ErrTrue:
         ax.errorbar(x, y, yerr, ls='', 
@@ -283,6 +309,7 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
     if lims!=None:
         ax.set_xlim(lims[0], lims[1])
         ax.set_ylim(lims[0], lims[1])
+    lab_xy = [labels[0], labels[1]]
     ax.set_xlabel(labels[0])
     ax.set_ylabel(labels[1])
 
@@ -293,17 +320,23 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
         labels.append(label_text)
 
     # fit formula
-    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-
     if write_formula:
-        fit_form = r'$f(x) = a'
-        for i in range(1, poly_order+1): 
-            if i == 1:
-                fit_form += f' + {letters[i]}x'
-            else:
-                fit_form += f' + {letters[i]}x^{i}'
-        fit_form += '$'
-        add_empty_handle(fit_form)
+            x_label_clean = lab_xy[0].replace('$', '')
+            
+            fit_form = rf'f({x_label_clean}) = '
+            for i in np.arange(poly_order, 0, -1): 
+                if i == poly_order:
+                    if i == 1:    
+                        fit_form += f' {letters[len(pars)-i-1]}{x_label_clean}' # Aggiunte graffe per esponenti > 9
+                    else:
+                        fit_form += f' {letters[len(pars)-i-1]}{x_label_clean}^{{{i}}}' # Aggiunte graffe per esponenti > 9
+                elif i == 1:
+                    fit_form += f' + {letters[len(pars)-2]}{x_label_clean}'
+                else:
+                    fit_form += f' + {letters[len(pars)-i-1]}{x_label_clean}^{{{i}}}' # Aggiunte graffe per esponenti > 9
+            fit_form += rf'+' + letters[len(pars)-1]
+            
+            add_empty_handle(f'${fit_form}$')
     
 
     for i in range(len(pars)):
@@ -318,3 +351,8 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
     
     plt.show()
     return fit_res
+
+
+
+
+
