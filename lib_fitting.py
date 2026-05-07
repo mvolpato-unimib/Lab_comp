@@ -235,15 +235,19 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
     err_pars = np.sqrt(np.diag(cov_pars))
     
     # print on screen results of the fit
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
     if name_pars != None:
         for i, name in enumerate(name_pars):
             print(f'{name} = {pars[i]:.2e} +/- {err_pars[i]:.3e}')
+        print()
+    else:
+        for i, par in enumerate(pars):
+            print(f'{letters[i]} = {par:.2e} +/- {err_pars[i]:.3e}')
         print()
 
     print(f'Chi2 = {chi2:.2f}')
     print(f'p-val = {pval:.2f}')
 
-    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
     if true_val_student is not None:
         print('\n\n-----------------------------------------')
         print('t-Student TEST:')

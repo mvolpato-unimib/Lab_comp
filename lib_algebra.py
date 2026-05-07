@@ -452,38 +452,50 @@ def inv_power_mth(A_in, epsilon=1e-14, N_max=10000):
 
     return eigVal, eigVect
 
+import numpy as np
+import warnings
 
 def QR_eigensolver(A_in, tol=1e-14, N_max=1e4):
-    """Computes the eigenvalues and eigenvectors of a matrix using the iterative QR algorithm.
+    def turnReal(vals, vects):
+        idx = np.argsort(vals)
+        vals = vals[idx]
+        vects = vects[:, idx]
 
-    Args:
-        A_in (array-like): The square matrix to analyze.
-        tol (float, optional): The tolerance for convergence of the off-diagonal elements. Defaults to 1e-14.
-        N_max (int or float, optional): The maximum number of iterations allowed. Defaults to 1e4.
-    """
+        if np.all(np.isreal(A_in)):
+            return np.real(vals), np.real(vects)
+        return vals, vects
 
-    import warnings
     N_max = int(N_max)
-    Ak = np.copy(A_in)
+    Ak = np.array(A_in, copy=True, dtype=float)
     n = len(Ak)
     Qk = np.eye(n)
+    
     for i in range(N_max):
         Q, R = QR_dec(Ak)
         Ak = R @ Q
-
-        if np.sum(np.abs(Ak - np.diag(np.diag(Ak)))**2) < tol:
-            eigenVal = np.diag(Ak)
-            eigenVect = Qk
-            return eigenVal, eigenVect    
-        
         Qk = Qk @ Q
+
+        # Off-diagonal convergence check without linalg
+        mask = ~np.eye(n, dtype=bool)
+        off_diag_elements = Ak[mask]
+        off_diag_norm = np.sqrt(np.sum(off_diag_elements**2))
+        
+        if off_diag_norm < tol:
+            break
+        
     eigenVal = np.diag(Ak)
     eigenVect = Qk
 
-    if not np.allclose(A_in @ eigenVect, eigenVal * eigenVect, rtol=tol):
-        warnings.warn(f'PROBLEM, solutions don\'t reach the precision in {N_max} steps')
+    # Verification without linalg.norm
+    residual_mat = A_in @ eigenVect - eigenVect @ np.diag(eigenVal)
+    residual_stat = np.sqrt(np.sum(residual_mat**2))
+    
+    if residual_stat > tol * 1e5:
+        warnings.warn(f'Low precision: residual {residual_stat:.2e} after {i+1} steps')
 
-    return eigenVal, eigenVect
+    return turnReal(eigenVal, eigenVect)
+
+
 
 # ----------------------------------------------------------
 # END EIGENS
