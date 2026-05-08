@@ -475,7 +475,6 @@ def QR_eigensolver(A_in, tol=1e-14, N_max=1e4):
         Ak = R @ Q
         Qk = Qk @ Q
 
-        # Off-diagonal convergence check without linalg
         mask = ~np.eye(n, dtype=bool)
         off_diag_elements = Ak[mask]
         off_diag_norm = np.sqrt(np.sum(off_diag_elements**2))
@@ -486,7 +485,6 @@ def QR_eigensolver(A_in, tol=1e-14, N_max=1e4):
     eigenVal = np.diag(Ak)
     eigenVect = Qk
 
-    # Verification without linalg.norm
     residual_mat = A_in @ eigenVect - eigenVect @ np.diag(eigenVal)
     residual_stat = np.sqrt(np.sum(residual_mat**2))
     

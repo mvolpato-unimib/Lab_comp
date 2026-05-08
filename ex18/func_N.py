@@ -5,7 +5,8 @@ V0_L = 10
 mL = 8      # represent the de Broglie lenght of the particle. The well has a width of mL dB lenghts.
 BoundCond = 'open'
 N_ls = np.arange(16, 65, 4)
-orders = [0, 3, 7] 
+# orders = [0, 3, 7] 
+orders = np.arange(0, 16, 3)
 
 vals, vects = ([], [])
 def main():
@@ -40,8 +41,8 @@ def main():
         Hamilt = hamiltonian(N_points, BoundCond, StaticV)
         print(f'\nHamitonian N = {N_ls[k]} produced, ready to find eigens')
 
-        # tot_eig_val, tot_eig_vect = QR_eigensolver(Hamilt, tol=1e-9, N_max=300)
-        tot_eig_val, tot_eig_vect = np.linalg.eigh(Hamilt)
+        tot_eig_val, tot_eig_vect = QR_eigensolver(Hamilt, tol=1e-9, N_max=500)
+        # tot_eig_val, tot_eig_vect = np.linalg.eigh(Hamilt)
 
         vals.append([tot_eig_val[i] for i in orders])
     np.savetxt('scal_N_val.txt', vals)
