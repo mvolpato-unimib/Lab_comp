@@ -390,7 +390,7 @@ def rk4(f_xy, y0, x):
     """
 
     leny = len(y0) if not np.isscalar(y0) else 1
-    sols_y = np.zeros((len(x), leny))
+    sols_y = np.zeros((len(x), leny), dtype=np.complex128)
     sols_y[0] = y0
     for i in range(len(x) - 1):
         h = x[i+1] - x[i]
