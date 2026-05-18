@@ -406,7 +406,77 @@ def rk4(f_xy, y0, x):
     return sols_y
 
 # ----------------------------------------------------------
-# RESOLUTION OF DIFFERENTIAL EQUATIONS
+# END RESOLUTION OF DIFFERENTIAL EQUATIONS
 # ----------------------------------------------------------
 
 
+
+
+# ----------------------------------------------------------
+# NUMERICAL INTEGRATION
+# ----------------------------------------------------------
+def trapezoidal(f,a, b, dx=1e-5):
+    """Evaluate the integral of a given function f, on a given interval (a, b), using Trapezoidal rule algorithm.
+
+    Args:
+        f (function): The function onto the integral is evaluated.
+        a (float): Lower extreme of the interval
+        b (float): Upper extreme of the interval
+        dx (float, optional): Step for the evaluation in the algorithm. Default to 1e-5. 
+    """
+    Dx = np.abs(b-a)
+    N = int(Dx / dx)
+    f_arr = f(a + np.arange(1, N)*dx)
+    return dx/2 * (f(a) + 2*np.sum(f_arr) + f(b))
+
+
+
+def Simpson(f,a, b, dx=1e-5):
+    """Evaluate the integral of a given function f, on a given interval (a, b), using Simpson's rule algorithm.
+
+    Args:
+        f (function): The function onto the integral is evaluated.
+        a (float): Lower extreme of the interval
+        b (float): Upper extreme of the interval
+        dx (float, optional): Step for the evaluation in the algorithm. Default to 1e-5. 
+    """
+    Dx = np.abs(b-a)
+    N_try = int(Dx / dx)
+    N = N_try if N_try%2==0 else N_try+1
+    dx = Dx / N
+
+    f_arr = f(a + np.arange(1, N)*dx)
+    f_even = f_arr[1::2]
+    f_odd = f_arr[0::2]
+    
+    return dx/3 * (f(a) + 2*np.sum(f_even) + 4*np.sum(f_odd) + f(b))
+   
+
+
+
+def Gauss_quad(f,a, b, dx=1e-5):
+    """Evaluate the integral of a given function f, on a given interval (a, b), using 2-points Gauss Legendre algorithm.
+
+    Args:
+        f (function): The function onto the integral is evaluated.
+        a (float): Lower extreme of the interval
+        b (float): Upper extreme of the interval
+        dx (float, optional): Step for the evaluation in the algorithm. Default to 1e-5. 
+    """
+    Dx = np.abs(b-a)
+    N = int(Dx / dx)
+    dx = Dx / N
+    c_p, c_m = ((1 + 1/np.sqrt(3))/2,(1 - 1/np.sqrt(3))/2)
+    arr_p = dx * (np.arange(N) + c_p)
+    arr_m = dx * (np.arange(N) + c_m)
+    
+    return dx/2 * np.sum(f(a+arr_p) + f(a+arr_m))
+   
+
+
+
+
+
+# ----------------------------------------------------------
+# END NUMERICAL INTEGRATION
+# ----------------------------------------------------------
