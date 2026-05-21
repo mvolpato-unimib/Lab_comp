@@ -285,6 +285,53 @@ def root_finder(cn, rand_shift=True, shift=1, nmax=1e3):
 
 
 
+# ----------------------------------------------------------
+# HERMITE COEFFICIENTS
+# ----------------------------------------------------------
+def herm_coeff(n):
+    """Evaluate the Hermite polynomials coefficients of degree n.
+
+    Args:
+        n (int): Degree of the polynomial.
+    """
+    if n == 0:
+        return np.array([1])
+    if n == 1:
+        return np.array([2, 0])
+    
+    h_minus_1 = np.array([1])   # H0
+    h_n = np.array([0, 2])      # H1
+    
+    for i in range(1, n):
+        term1 = 2 * np.insert(h_n, 0, 0) 
+        term2 = 2 * i * np.append(h_minus_1, [0, 0])
+        h_next = term1 - term2
+        h_minus_1 = h_n
+        h_n = h_next
+        
+    return np.flip(h_n)
+
+
+
+def herm_func(x, p_deg): 
+    """Evaluate the Hermite polynomials of degree p in a range x
+
+    Args:
+        x (float or array-like): Points where to evaluate the polynomial.
+        p_deg (int): Degree of the polynomial.
+    """
+    
+    coeffs = np.flip(herm_coeff(p_deg))
+    monomial = x[:, None]**np.arange(0, p_deg+1)
+    res_mat = monomial * coeffs
+
+    return np.sum(res_mat, axis=1)
+# ----------------------------------------------------------
+# END HERMITE COEFFICIENTS
+# ----------------------------------------------------------
+
+
+
 
 # ----------------------------------------------------------
 # RESOLUTION OF DIFFERENTIAL EQUATIONS
@@ -454,7 +501,7 @@ def Simpson(f,a, b, dx=1e-5):
 
 
 
-def Gauss_quad(f,a, b, dx=1e-5):
+def Gauss_Leg(f,a, b, dx=1e-5):
     """Evaluate the integral of a given function f, on a given interval (a, b), using 2-points Gauss Legendre algorithm.
 
     Args:
@@ -473,6 +520,26 @@ def Gauss_quad(f,a, b, dx=1e-5):
     return dx/2 * np.sum(f(a+arr_p) + f(a+arr_m))
    
 
+def H_weigts(x, n): 
+    from math import factorial
+    num = 2**(n-1) * factorial(n-1) * np.sqrt(np.pi)
+    den = n * (herm_func(x, n-1))**2
+    return num / den
+
+
+def Gauss_Herm(f, n=10):
+    r"""Evaluates the integral of a function f(x) * e^(-x^2) using n-point Gauss-Hermite quadrature.
+    
+    This algorithm approximates the value of the integral over the entire real line:
+    $$ \int_{-\infty}^{+\infty} f(x) e^{-x^2} dx $$
+
+    Args:
+        f (callable): The function f(x) to be integrated.
+        n (int, optional): Number of sample points and weights (degree of the polynomial). Defaults to 10.
+    """
+
+    x_i = root_finder(herm_coeff(n))
+    return np.sum(H_weigts(x_i, n) * f(x_i))
 
 
 

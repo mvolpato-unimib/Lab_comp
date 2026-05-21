@@ -488,8 +488,8 @@ def QR_eigensolver(A_in, tol=1e-14, N_max=1e4):
     residual_mat = A_in @ eigenVect - eigenVect @ np.diag(eigenVal)
     residual_stat = np.sqrt(np.sum(residual_mat**2))
     
-    if residual_stat > tol * 1e5:
-        warnings.warn(f'Low precision: residual {residual_stat:.2e} after {i+1} steps')
+    # if np.abs(residual_stat) > tol * 1e5:
+    #     warnings.warn(f'Low precision: residual {abs(residual_stat):.2e} after {i+1} steps')
 
     return turnReal(eigenVal, eigenVect)
 

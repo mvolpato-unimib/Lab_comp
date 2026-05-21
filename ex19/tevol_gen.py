@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath('..'))
 from lib_equations import rk4
 
 # GENERIC PARAMETERS (CHANGEABLE)
-N_p = 128
+N_p = 64
 mL = 8                      # normalised lenght 
 sm = 0.5                    # width of the wave packet
 Dir_cond = True             # Dirichlet conditions (the wf is set to 0 at the borders, resulting in a reflection)
@@ -65,9 +65,9 @@ if d_tau > cfl_limit:
 
 # POTENTIAL
 V_0 = 100       # near inifinite wall potential wall
-unit_len = 2 * a_norm
-depth = unit_len * 1/2
-width = unit_len * 3
+unit_len = a_norm
+depth = unit_len * 2
+width = unit_len
 
 x_pos = mL/2
 y_pos = mL/2
@@ -91,7 +91,7 @@ def one_obst(x, y, t):
                     V_0, 0)
 
 def double_slit(x, y, t):
-    distance = a_norm*4
+    distance = a_norm*2
     return np.where((x >= x_pos) & (x <= x_pos + depth) & 
                     ((y <= y_pos + distance - width/2) | (y >= y_pos + distance + width/2)) & 
                     ((y <= y_pos - distance - width/2) | (y >= y_pos - distance + width/2)), 
@@ -110,7 +110,7 @@ Potentials = {
     'alpha_p': alpha_p
 }
 
-name = 'alpha_p'
+name = 'double_slit'
 V_m = Potentials[name]
 
 

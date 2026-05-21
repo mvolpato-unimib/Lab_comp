@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import lib_plot
 
 def Direct_mth(xarr, yarr, N_points=1000):
     """Solves for polynomial coefficients directly using a Vandermonde matrix.
@@ -171,7 +170,7 @@ def plot_fit (f, x_sc, y_sc, yerr, params, cov_par,
         ylab (str, optional): The label for the y-axis. Defaults to 'Y COO'.
         save_name (str, optional): The file path to save the generated plot. Defaults to 'plots/plot.png'.
     """
-
+    import lib_plot
     eps = 1e-8
     x_plot = np.linspace(start, stop, 500)
     y_plot = np.array([f(x, *params) for x in x_plot])
@@ -225,7 +224,7 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
         figsz (tuple, optional): Size of the figure plotted in the form of (x, y). Default to (8, 5)
         true_val_student (array-like): Array of the expected values for the parameters of the fit for a t-Student test, if None test is not performed. Default to None
     """
-
+    import lib_plot
     import matplotlib.patches as mpatches
     from scipy import stats
 
