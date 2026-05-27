@@ -528,10 +528,10 @@ def H_weigts(x, n):
 
 
 def Gauss_Herm(f, n=10):
-    r"""Evaluates the integral of a function f(x) * e^(-x^2) using n-point Gauss-Hermite quadrature.
+    """Evaluates the integral of a function f(x) * e^(-x^2) using n-point Gauss-Hermite quadrature.
     
     This algorithm approximates the value of the integral over the entire real line:
-    $$ \int_{-\infty}^{+\infty} f(x) e^{-x^2} dx $$
+    $ \int_{-\infty}^{+\infty} f(x) e^{-x^2} dx $
 
     Args:
         f (callable): The function f(x) to be integrated.
