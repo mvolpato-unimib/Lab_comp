@@ -171,6 +171,7 @@ def plot_fit (f, x_sc, y_sc, yerr, params, cov_par,
         save_name (str, optional): The file path to save the generated plot. Defaults to 'plots/plot.png'.
     """
     import lib_plot
+
     eps = 1e-8
     x_plot = np.linspace(start, stop, 500)
     y_plot = np.array([f(x, *params) for x in x_plot])
@@ -227,6 +228,14 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
     import lib_plot
     import matplotlib.patches as mpatches
     from scipy import stats
+
+
+    if len(x)==1:
+        raise IndexError(f'Interpolation for {name_points} is not possible, there\'s only one point!!')
+
+    if len(x) != len(y):
+        raise IndexError(f'x and y do not have the same lenght! The method does not work.') 
+
 
     yerr = np.sqrt(np.diag(cov))
     fit_res = fit_engine(x, y, cov, poly_order)
