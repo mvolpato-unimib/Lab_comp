@@ -200,18 +200,19 @@ def plot_fit (f, x_sc, y_sc, yerr, params, cov_par,
 
 
 
-def lin_fit (x, y, cov, poly_order, name_pars=None, 
+def lin_fit (x, y, cov=None, poly_order=1, plus_minus=False, name_pars=None,
              mar='.', col='red', name_points='name points',
              labels=[r'x', r'y'], nsigma=3, lims=None, 
-             ErrTrue=True, save_name=None, write_formula=False,
+             ErrTrue=False, save_name=None, write_formula=False,
              figsz=(8, 5), true_val_student=None):
     """Executes a polynomial fit and plots the results with customizable styling and confidence intervals.
 
     Args:
         x (array-like): The independent variable data points.
         y (array-like): The dependent variable data points.
-        cov (array-like): The covariance matrix of the data.
-        poly_order (int): The order of the polynomial to fit.
+        cov (array-like, optional): The covariance matrix of the data. Default to identity matrix of len(x).
+        poly_order (int, optional): The order of the polynomial to fit. Default to 1.
+        plus_minus (bool, optional): If True the errors on the parameters are displayed on the plot, else not, useful for non statitistical relevant fit. Default to False.
         name_pars (list of str, optional): Parameter names to print in the console output. Defaults to None.
         mar (str, optional): The matplotlib marker style for the data points. Defaults to '.'.
         col (str, optional): The color used for the plot elements. Defaults to 'red'.
@@ -236,6 +237,8 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
     if len(x) != len(y):
         raise IndexError(f'x and y do not have the same lenght! The method does not work.') 
 
+    if cov == None:
+        cov = np.eye(len(x))
 
     yerr = np.sqrt(np.diag(cov))
     fit_res = fit_engine(x, y, cov, poly_order)
@@ -350,10 +353,14 @@ def lin_fit (x, y, cov, poly_order, name_pars=None,
             
             add_empty_handle(f'${fit_form}$')
     
-
     for i in range(len(pars)):
-        par_lab = rf'${letters[i]} = {pars[i]:.2f} \pm {err_pars[i]:.2f}$'
+        if plus_minus:
+            par_lab = rf'${letters[i]} = {pars[i]:.2f} \pm {err_pars[i]:.2f}$'
+        else:
+            par_lab = rf'${letters[i]} = {pars[i]:.2f}$'
+        
         add_empty_handle(par_lab)
+    
     
     ax.legend(handles=handles, labels=labels)
 
