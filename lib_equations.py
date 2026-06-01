@@ -120,7 +120,7 @@ def bisec(f, a, b, optim=True, tol=1e-8, out_niter=False, out_story=False, MaxIt
 
 
 
-def Newt_Rap(func, der_func, x0, tol=1e-14, MaxIter=500):
+def Newt_Rap(func, der_func, x0, tol=1e-14, MaxIter=500, der_eps=1e-14):
     """Finds a root of a function using the Newton-Raphson method.
 
     Args:
@@ -129,6 +129,7 @@ def Newt_Rap(func, der_func, x0, tol=1e-14, MaxIter=500):
         x0 (float or array-like): The initial guess(es) for the root.
         tol (float, optional): The tolerance for convergence. Defaults to 1e-14.
         MaxIter (int, optional): The maximum allowed iterations. Defaults to 500.
+        der_eps (float, optional): The added epsilon to compensate the zero division error on the derivative. Default to 1e-14.
     """
 
     from collections.abc import Iterable
@@ -147,7 +148,7 @@ def Newt_Rap(func, der_func, x0, tol=1e-14, MaxIter=500):
             f_val = np.where(truth_cond, func(xn), 0)
             truth_cond = abs(f_val) > tol
             
-            f_der_val = np.where(truth_cond, der_func(xn), 0)
+            f_der_val = np.where(truth_cond, der_func(xn + der_eps), 0)
             n_iter += np.where(truth_cond, 1, 0)
             xn = np.where(truth_cond, xn - f_val / f_der_val, xn)
             
@@ -158,7 +159,7 @@ def Newt_Rap(func, der_func, x0, tol=1e-14, MaxIter=500):
 
         if np.max(n_iter) >= MaxIter:
             import warnings
-            warnings.warn(f'\nMaximum iterations reached. Algorithm diverges!', RuntimeWarning)
+            warnings.warn(f'\n\nMaximum iterations reached. Algorithm diverges!', RuntimeWarning)
         return xn
 
     # if input is a scalar
@@ -169,14 +170,14 @@ def Newt_Rap(func, der_func, x0, tol=1e-14, MaxIter=500):
 
         while n_iter < MaxIter:
             f_val = func(xn)
-            f_der_val = der_func(xn)
+            f_der_val = der_func(xn + der_eps)
 
             if abs(f_val) < tol:
                 break
 
             if abs(f_der_val) < 1e-20:
                 import warnings
-                warnings.warn(f'\nDerivative too small at x = {xn:.2f}', RuntimeWarning)
+                warnings.warn(f'\n\nDerivative too small at x = {xn:.2f}', RuntimeWarning)
                 break
 
             xn = xn - f_val / f_der_val
@@ -188,11 +189,11 @@ def Newt_Rap(func, der_func, x0, tol=1e-14, MaxIter=500):
 
         if n_iter >= MaxIter:
             import warnings
-            warnings.warn(f'\nMaximum iterations reached for x0 = {x0:.2f}', RuntimeWarning)
+            warnings.warn(f'\n\nMaximum iterations reached for x0 = {x0:.2f}', RuntimeWarning)
         
         if np.isnan(func(xn)):
             import warnings
-            warnings.warn(f'\nNaN detected at iteration {n_iter} for x0 = {x0:.2f}', RuntimeWarning)
+            warnings.warn(f'\n\nNaN detected at iteration {n_iter} for x0 = {x0:.2f}', RuntimeWarning)
         
         return xn, len(sol_ls), np.array(sol_ls)
 
@@ -531,12 +532,14 @@ def Gauss_Herm(f, n=10):
     """Evaluates the integral of a function f(x) * e^(-x^2) using n-point Gauss-Hermite quadrature.
     
     This algorithm approximates the value of the integral over the entire real line:
-    $ \int_{-\infty}^{+\infty} f(x) e^{-x^2} dx $
+    ∫ f(x) * e^(-x^2) dx ≈ Σ [w_i * f(x_i)] , (i in [1, n])
 
     Args:
         f (callable): The function f(x) to be integrated.
         n (int, optional): Number of sample points and weights (degree of the polynomial). Defaults to 10.
+
     """
+    # ... resto del codice ...
 
     x_i = root_finder(herm_coeff(n))
     return np.sum(H_weigts(x_i, n) * f(x_i))
