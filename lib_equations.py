@@ -200,6 +200,87 @@ def Newt_Rap(func, der_func, x0, tol=1e-14, MaxIter=500, der_eps=1e-14):
 
 
 
+def Newt_Rap_corr(func, der_func, x0, tol=1e-14, MaxIter=500, der_eps=1e-14, lamb_shift=0.85):
+    """Finds a root of a function using the Newton-Raphson method, modified to reduce cycles introducing a correction factor.
+
+    Args:
+        func (callable): The target function for which to find a root.
+        der_func (callable): The analytical derivative of the target function.
+        x0 (float or array-like): The initial guess(es) for the root.
+        tol (float, optional): The tolerance for convergence. Defaults to 1e-14.
+        MaxIter (int, optional): The maximum allowed iterations. Defaults to 500.
+        der_eps (float, optional): The added epsilon to compensate the zero division error on the derivative. Default to 1e-14.
+        lamb_shift (float, optional): represent the shift from the original algorithm, introduced to reduce some phenomena like cycles. Must be in (0,1). Defualt to 0.85.
+    """
+
+    from collections.abc import Iterable
+    
+    # if input is iterable, list, tuple, np array, ecc.
+    if isinstance(x0, Iterable): 
+        if not isinstance(x0, np.ndarray):
+            xn = np.array(x0)
+        else:
+            xn = x0
+        n_iter = np.zeros_like(x0, dtype=int)  
+
+        truth_cond = np.ones_like(x0, dtype=bool)
+        while np.all(n_iter < MaxIter):
+
+            f_val = np.where(truth_cond, func(xn), 0)
+            truth_cond = abs(f_val) > tol
+            
+            f_der_val = np.where(truth_cond, der_func(xn + der_eps), 0)
+            n_iter += np.where(truth_cond, 1, 0)
+            xn = np.where(truth_cond, xn - lamb_shift * f_val / f_der_val, xn)
+            
+            if not np.any(truth_cond):
+                break
+            
+            # print('Iter.', np.max(n_iter))
+
+        if np.max(n_iter) >= MaxIter:
+            import warnings
+            warnings.warn(f'\n\nMaximum iterations reached. Algorithm diverges!', RuntimeWarning)
+        return xn
+
+    # if input is a scalar
+    else:
+        xn = x0
+        sol_ls = [x0]
+        n_iter = 0
+
+        while n_iter < MaxIter:
+            f_val = func(xn)
+            f_der_val = der_func(xn + der_eps)
+
+            if abs(f_val) < tol:
+                break
+
+            if abs(f_der_val) < 1e-20:
+                import warnings
+                warnings.warn(f'\n\nDerivative too small at x = {xn:.2f}', RuntimeWarning)
+                break
+
+            xn = xn - lamb_shift * f_val / f_der_val
+            sol_ls.append(xn)
+            n_iter += 1
+
+            if np.isnan(f_val):
+                break
+
+        if n_iter >= MaxIter:
+            import warnings
+            warnings.warn(f'\n\nMaximum iterations reached for x0 = {x0:.2f}', RuntimeWarning)
+        
+        if np.isnan(func(xn)):
+            import warnings
+            warnings.warn(f'\n\nNaN detected at iteration {n_iter} for x0 = {x0:.2f}', RuntimeWarning)
+        
+        return xn, len(sol_ls), np.array(sol_ls)
+
+
+
+
 
 def Secant_mth(func, x0, x1, tol=1e-14, MaxIter=500):
     """Finds a root of a function using the secant method.
