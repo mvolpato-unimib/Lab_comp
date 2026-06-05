@@ -272,11 +272,11 @@ def lin_fit (x, y, cov=None, poly_order=1, plus_minus=False, name_pars=None,
             
             p_value_t = 2 * stats.t.sf(t_val, dof)
             
-            print(f'\nParametro {letters[i]}:')
-            print(f'  Atteso  = {true_val}')
-            print(f'  Fit     = {exp_val} ± {sigma}')
-            print(f'  t-obs   = {t_val:.4f}')
-            print(f'  p-value = {p_value_t:.4f} --> {p_value_t*100:.2f}%')
+            print(f'\nParameter {letters[i]}:')
+            print(f'  Expected = {true_val}')
+            print(f'  Fit      = {exp_val} ± {sigma}')
+            print(f'  t-obs    = {t_val:.4f}')
+            print(f'  p-value  = {p_value_t:.4f} --> {p_value_t*100:.2f}%')
         print('-----------------------------------------')
 
 
