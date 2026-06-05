@@ -394,7 +394,6 @@ def herm_coeff(n):
     return np.flip(h_n)
 
 
-
 def herm_func(x, p_deg): 
     """Evaluate the Hermite polynomials of degree p in a range x
 
@@ -620,7 +619,6 @@ def Gauss_Herm(f, n=10):
         n (int, optional): Number of sample points and weights (degree of the polynomial). Defaults to 10.
 
     """
-    # ... resto del codice ...
 
     x_i = root_finder(herm_coeff(n))
     return np.sum(H_weigts(x_i, n) * f(x_i))
