@@ -42,7 +42,6 @@ def main():
         print(f'\nHamitonian N = {N_ls[k]} produced, ready to find eigens')
 
         tot_eig_val, tot_eig_vect = QR_eigensolver(Hamilt, tol=1e-9, N_max=500)
-        # tot_eig_val, tot_eig_vect = np.linalg.eigh(Hamilt)
 
         vals.append([tot_eig_val[i] for i in orders])
     np.savetxt('scal_N_val.txt', vals)

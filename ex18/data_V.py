@@ -48,7 +48,6 @@ def main():
     Hamilt = hamiltonian(N_points, BoundCond, StaticV)
     print('\nHamitonian produced, ready to find eigens...')
     tot_eig_val, tot_eig_vect = QR_eigensolver(Hamilt, tol=1e-9, N_max=200)
-    # tot_eig_val, tot_eig_vect = np.linalg.eigh(Hamilt)
     print('\nEigens found!')
 
     np.savetxt('V_values.txt', tot_eig_val)

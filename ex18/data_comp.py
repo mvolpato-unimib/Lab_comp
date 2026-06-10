@@ -50,7 +50,6 @@ def main():
         print(f'\nHamitonian {k} produced, ready to find eigens...')
 
         tot_eig_val, tot_eig_vect = QR_eigensolver(Hamilt, tol=1e-9, N_max=400)
-        # tot_eig_val, tot_eig_vect = np.linalg.eigh(Hamilt)
 
         vals.append(tot_eig_val[0])
         vects.append(tot_eig_vect[:, 0])
