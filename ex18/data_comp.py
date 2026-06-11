@@ -5,7 +5,7 @@ N_points = 64
 mL = 8      # represent the de Broglie lenght of the particle. The well has a width of mL dB lenghts.
 BoundCond = 'open'
 # v_ls = np.arange(10, 80, step=20)
-v_ls = [10, 40, 80]
+v_ls = [1, 4, 8]
 
 def main():
 
@@ -43,7 +43,9 @@ def main():
             coor = np.arange(0, N)
             V = np.eye(N) * V0(coor)
 
-            H = - N**2 / (2*mL) * K + V
+            dx = mL / (N - 1)
+            H = - 1 / (2 * dx**2) * K + V
+
             return H
 
         Hamilt = hamiltonian(N_points, BoundCond, StaticV)
@@ -55,8 +57,8 @@ def main():
         vects.append(tot_eig_vect[:, 0])
         print('Eigens found!\n')
 
-    np.savetxt(f'ground_val.txt', vals)
-    np.savetxt(f'ground_vect.txt', vects)
+    np.savetxt('txts/ground_val.txt', vals)
+    np.savetxt('txts/ground_vect.txt', vects)
     print('Results written on txt files...\n')
 
 

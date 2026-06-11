@@ -1,11 +1,10 @@
 import numpy as np
 
 # parameters
-V0_L = 10
+V0_L = 1
 mL = 8      # represent the de Broglie lenght of the particle. The well has a width of mL dB lenghts.
 BoundCond = 'open'
 N_ls = np.arange(16, 65, 4)
-# orders = [0, 3, 7] 
 orders = np.arange(0, 16, 3)
 
 vals, vects = ([], [])
@@ -35,7 +34,9 @@ def main():
             coor = np.arange(0, N)
             V = np.eye(N) * V0(coor)
 
-            H = - N**2 / (2*mL) * K + V
+            dx = mL / (N - 1)
+            H = - 1 / (2 * dx**2) * K + V
+
             return H
  
         Hamilt = hamiltonian(N_points, BoundCond, StaticV)
@@ -44,7 +45,7 @@ def main():
         tot_eig_val, tot_eig_vect = QR_eigensolver(Hamilt, tol=1e-9, N_max=500)
 
         vals.append([tot_eig_val[i] for i in orders])
-    np.savetxt('scal_N_val.txt', vals)
+    np.savetxt('txts/scal_N_val.txt', vals)
     print('\n\nResults written on txt files...\n')
 
 if __name__ == "__main__":

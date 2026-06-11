@@ -6,29 +6,6 @@ import sys
 import os
 sys.path.append(os.path.abspath('..'))
 
-# ------------------------------------
-#			  Graphics
-# ------------------------------------
-# If a better plot is needed, these settings allow for high quality image and text rendering
-
-# plt.rcParams.update({
-#     "text.usetex": True,           # Activate the use of LaTeX for all text
-#     "font.family": "serif",        # Use a Serif font for normal text
-#     "font.serif": ["Palatino"],    # Specify Palatino (very similar to the one in the photo)
-#     "axes.labelsize": 16,          # Font size for axis labels
-#     "font.size": 14,               # General font size
-#     "legend.fontsize": 14,         # Font size for legend
-#     "xtick.labelsize": 13,         # Font size for x-axis numbers
-#     "ytick.labelsize": 13,         # Font size for y-axis numbers
-#     "figure.figsize": (8, 6),      # Default figure size
-#     "figure.dpi": 100,             # Resolution
-#     "text.latex.preamble": r"\usepackage{amsmath} \usepackage{amssymb}"
-# })
-
-# ------------------------------------
-
-
-
 
 # ------------------------------------
 # 			 Parameters
@@ -40,7 +17,7 @@ BoundCond = 'open'  # boundary conditions
 selec = 4           # select a certain number of first eigenvals to plot
 n_mL = .5           # parameter to set the ylim. If ylim is not needed it is possible to comment the entire line:
                     # "plt.ylim(min(eig_val) - n_mL*mL, max(eig_val) + n_mL*mL)"
-V0_L = 10
+V0_L = 1
 
 # ------------------------------------
 
@@ -76,8 +53,8 @@ V0_L = 10
 
 # def alpha_well(x):
 # 	R = N_points/4
-	# coulomb = 100 / (x - R + 1e-10) 
-	# return np.where(x < R, - V0_L, coulomb)
+# 	coulomb = 100 / (x - R + 1e-10) 
+# 	return np.where(x < R, - V0_L, coulomb)
 
 # ------------------------------------
 # ------------------------------------
@@ -107,12 +84,18 @@ def main():
         coor = np.arange(0, N)
         V = np.eye(N) * V0(coor)
 
-        H = - N**2 / (2*mL) * K + V
+        dx = mL / (N - 1)
+        H = - 1 / (2 * dx**2) * K + V
+
         return H
 
     Hamilt = hamiltonian(N_points, BoundCond, StaticV)
     print('\nHamitonian produced, ready to find eigens...')
+
+    # slow method (mine)
     # tot_eig_val, tot_eig_vect = QR_eigensolver(Hamilt, tol=1e-9, N_max=200)
+    
+    # fast method (numpy)
     tot_eig_val, tot_eig_vect = np.linalg.eigh(Hamilt)
 
 
@@ -122,7 +105,7 @@ def main():
 # ------------------------------------
     
     eig_val = np.copy(tot_eig_val)[:selec]
-    eig_vect = (np.copy(tot_eig_vect)[:, :selec].T)**2
+    eig_vect = np.copy(tot_eig_vect)[:, :selec].T
     print('\nEigenvalues =', eig_val)
 
     xcoo = np.arange(0, N_points)
@@ -133,7 +116,7 @@ def main():
             lw=2)
     for i, eig in enumerate(eig_val):
         plt.hlines(eig, min(xcoo), max(xcoo), color=cols[i], ls=':', alpha=0.6, lw=2)
-        plt.plot(xcoo, (mL**2)*eig_vect[i] + eig, color=cols[i], zorder=2,
+        plt.plot(xcoo, eig_vect[i] + eig, color=cols[i], zorder=2,
                 label=rf'$\phi_{i}$')
         # symmetry
         # plt.plot(np.flip(xcoo), (mL**2)*eig_vect[i] + eig, color=cols[i], ls='--', zorder=2)
@@ -141,7 +124,7 @@ def main():
     # plt.vlines(xcoo[-1]/2, np.min(eig_vect)*mL+eig_val[0], np.max(eig_vect)*mL+eig_val[-1],
     #         color='black', ls=':', zorder=0, alpha=0.8)
 
-    plt.ylim(min(eig_val) - n_mL*mL, max(eig_val) + n_mL*mL)
+    # plt.ylim(min(eig_val) - n_mL*mL, max(eig_val) + n_mL*mL)
 
     plt.xlabel(r'$x/a$')
     plt.ylabel(r'$E$')

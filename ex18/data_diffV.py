@@ -2,7 +2,7 @@ import numpy as np
 
 # parameters
 N_points = 64
-V0_L = 10
+V0_L = 1
 mL = 8      # represent the de Broglie lenght of the particle. The well has a width of mL dB lenghts.
 BoundCond = 'open'
 
@@ -16,12 +16,19 @@ def double_well(x):
     return V0_L * (u**4/2 - 2*u**2)
 
 def triangular_well(x):
-    v = np.where(x < N_points/4, V0_L*1e4, 0.5 * (x - N_points/4))
-    return np.clip(v, -V0_L, V0_L*2)
-
+    v_bound = N_points/4    # sets the boundary for the vertical barrier
+    wall_h = 1e3            # controls the height of the left wall
+    slope = 0.3                 # defines the slope of the triangular region
+    infinite_wall = np.where(x < v_bound , wall_h, slope * (x - v_bound))
+    return infinite_wall
+    
 def alpha_well(x):
     R = N_points/4
-    coulomb = 20 / (x - 15 + 1e-10) 
+    coupl_c = 2            # is the coupling constant (strength of repulsion)
+    sing_p = 15             # defines the horizontal position/center of the Coulomb singularity
+    coulomb = coupl_c / (x - sing_p + 1e-10) 
+    
+    # Returns constant potential for x < R, otherwise Coulomb repulsion
     return np.where(x < R, -V0_L, coulomb)
 
 static_V_ls = [finite_well, double_well, triangular_well, alpha_well]
@@ -50,7 +57,8 @@ def main():
             coor = np.arange(0, N)
             V = np.eye(N) * V0(coor)
 
-            H = - N**2 / (2*mL) * K + V
+            dx = mL / (N - 1)
+            H = - 1 / (2 * dx**2) * K + V
             return H
 
         Hamilt = hamiltonian(N_points, BoundCond, StaticV)
@@ -58,14 +66,13 @@ def main():
         {names[i]}
 -----------------------------------''')
         print('Hamitonian produced, ready to find eigens...')
-        # tot_eig_val, tot_eig_vect = QR_eigensolver(Hamilt, tol=1e-9, N_max=200)
-        tot_eig_val, tot_eig_vect = np.linalg.eigh(Hamilt)
+        tot_eig_val, tot_eig_vect = QR_eigensolver(Hamilt, tol=1e-9, N_max=200)
         vals.append(tot_eig_val)
         vects.append(tot_eig_vect)
         print('Eigens found!')
 
-    np.save('diff_val.npy', vals)
-    np.save('diff_vect.npy', vects)
+    np.save('txts/diff_val.npy', vals)
+    np.save('txts/diff_vect.npy', vects)
     print('\n\nResults written on txt files...\n')
 
 if __name__ == "__main__":

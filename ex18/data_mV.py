@@ -2,7 +2,7 @@ import numpy as np
 
 # parameters
 N_points = 64
-V0_L = -10
+V0_L = -1
 mL = 8      # represent the de Broglie lenght of the particle. The well has a width of mL dB lenghts.
 BoundCond = 'open'
 
@@ -41,7 +41,9 @@ def main():
         coor = np.arange(0, N)
         V = np.eye(N) * V0(coor)
 
-        H = - N**2 / (2*mL) * K + V
+        dx = mL / (N - 1)
+        H = - 1 / (2 * dx**2) * K + V
+        
         return H
 
 
@@ -50,8 +52,8 @@ def main():
     tot_eig_val, tot_eig_vect = QR_eigensolver(Hamilt, tol=1e-9, N_max=200)
     print('\nEigens found!')
 
-    np.savetxt('mV_values.txt', tot_eig_val)
-    np.savetxt('mV_vectors.txt', tot_eig_vect)
+    np.savetxt('txts/mV_values.txt', tot_eig_val)
+    np.savetxt('txts/mV_vectors.txt', tot_eig_vect)
     print('Results written on txt files...\n')
 
 if __name__ == "__main__":
