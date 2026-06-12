@@ -8,8 +8,8 @@ import os
 sys.path.append(os.path.abspath('..'))
 from lib_equations import rk4
 
-# GENERIC PARAMETERS (CHANGEABLE)
-N_p = 64
+# GENERIC PARAMETERS
+N_p = 128
 mL = 8                      # normalised lenght 
 sm = 0.5                    # width of the wave packet
 Dir_cond = True             # Dirichlet conditions (the wf is set to 0 at the borders, resulting in a reflection)
@@ -18,19 +18,22 @@ Dir_cond = True             # Dirichlet conditions (the wf is set to 0 at the bo
 x_0 = (mL/4, mL/2)                  # initial position of the gaussian wave packet                      
 
 # MOMENTUM
-p_0 = ((2*np.pi)*6 / mL, 0)         # dimensionless momentum
+p_0 = ((2*np.pi)*20 / mL, 0)         # dimensionless momentum
 
 # TIME
 d_tau = 0.002
-max_t = 0.6
+max_t = 0.4
 
 # PLOT PARAMETERS
+colormap = 'viridis'
 plot_V_pot = True           # potential plot?
 plot_psi_x = True           # mod2 along x axis
 plot_psi_y = True           # mod2 along y axis at a specific x=sensor_pos (resemble a sensor)
 sensor_pos = 0.7            # position of the sensor (in percentage of the generic lenght, ex. sensor_pos = 0.7 ---> sens_pos = 70% of mL)
 plot_time = False
-save_anim = False            # save the animation?? 
+save_anim = True            # save the animation?? 
+
+# For better plotting uncomment this:
 if save_anim:
     plt.rcParams.update({
         "text.usetex": True,           
@@ -64,21 +67,21 @@ if d_tau > cfl_limit:
 
 
 # POTENTIAL
-V_0 = 100       # near inifinite wall potential wall
+V_0 = 200       # near inifinite wall potential wall
 unit_len = a_norm
-depth = unit_len * 2
-width = unit_len
+depth = unit_len / 2
+width = unit_len * 4
 
 x_pos = mL/2
 y_pos = mL/2
+twof_dist = unit_len * 4
 
 # Examples of potential to try: 
 def free_part(x, y, t):
     return np.zeros_like(x)
 
 def finite_wall(x, y, t):
-    V_tunnel = 20
-    return np.where((x >= x_pos) & (x <= x_pos + depth), V_tunnel, 0)
+    return np.where((x >= x_pos) & (x <= x_pos + depth), V_0, 0)
 
 def one_slit(x, y, t):
     return np.where((x >= x_pos) & (x <= x_pos + depth) & 
@@ -91,14 +94,30 @@ def one_obst(x, y, t):
                     V_0, 0)
 
 def double_slit(x, y, t):
-    distance = a_norm*2
-    return np.where((x >= x_pos) & (x <= x_pos + depth) & 
-                    ((y <= y_pos + distance - width/2) | (y >= y_pos + distance + width/2)) & 
-                    ((y <= y_pos - distance - width/2) | (y >= y_pos - distance + width/2)), 
-                    V_0, 0)
+    center1 = y_pos + twof_dist
+    center2 = y_pos - twof_dist
+    in_wall = (x >= x_pos) & (x <= x_pos + depth)
+    is_blocked = (abs(y - center1) > width/2) & (abs(y - center2) > width/2)
+    return np.where(in_wall & is_blocked, V_0, 0)
 
 def alpha_p(x, y, t):
-    return np.where((x <= x_pos), 0, 10 + 1/(x+1e-10))
+    V_alp = V_0       # custom potential, for the study of different configuration
+    return np.where((x <= x_pos), 0, V_alp + 1/(x+1e-10))
+
+def diff_grate(x, y, t):
+    bool_out = True
+    n_grat = 20
+    grat_dist = unit_len * 6
+    width = unit_len * 3
+    dist = np.arange(n_grat) * grat_dist
+    
+    for n in range(n_grat):
+        center = dist[n]
+        bool_out = bool_out & (abs(y - center) > width/2)
+    in_wall = (x >= x_pos) & (x <= x_pos + depth)
+        
+    return np.where(in_wall & bool_out, V_0, 0)
+
 
 
 Potentials = {
@@ -107,10 +126,11 @@ Potentials = {
     'one_slit': one_slit,
     'one_obst': one_obst,
     'double_slit': double_slit,
-    'alpha_p': alpha_p
+    'alpha_p': alpha_p,
+    'diff_grate': diff_grate,
 }
 
-name = 'double_slit'
+name = 'alpha_p'
 V_m = Potentials[name]
 
 
@@ -207,7 +227,8 @@ ax_2d = fig.add_subplot(gs[0, 0])
 extent = [0, mL, 0, mL]
 psi_mat_0 = psi_t[0].reshape((N_p, N_p))
 
-im_psi = ax_2d.imshow(psi_mat_0, animated=True, cmap='viridis', extent=extent, origin='lower')
+im_psi = ax_2d.imshow(psi_mat_0, animated=True, cmap=colormap, extent=extent, origin='lower')
+
 ax_2d.set_xlabel(r'$x$')
 ax_2d.set_ylabel(r'$y$')
 
@@ -319,8 +340,16 @@ ani = FuncAnimation(
 
 if save_anim:
     name_folder = 'plots/' + name
+
+    import time
+    start_time = time.time()
+
     print("Saving the animation...")
     ani.save(f'{name_folder}.gif', writer='pillow', fps=15)
+
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time:.4f} s")
     print(f'Animation saved in "{name_folder}.gif"')
 
 else:
