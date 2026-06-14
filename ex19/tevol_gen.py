@@ -34,8 +34,8 @@ plot_time = False
 save_plot = False            # save the 2d plots??
 plot_2d_pot = True          # plot of the potential over the figure (for certain kind of potentials it is undesirable)
 
-do_anim = True              # animation block indent (do animate or not?)
-save_anim = True            # save the animation?? 
+do_anim = False              # animation block indent (do animate or not?)
+save_anim = False            # save the animation?? 
 
 better_anim = False          # better plotting uncomment this:
 
