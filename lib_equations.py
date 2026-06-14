@@ -569,7 +569,7 @@ def loc_Simpson(f, x0, dx=1e-5):
 
 
 
-def trapezoidal(f,a, b, dx=1e-5):
+def trapezoidal(f,a, b, dx=1e-5, r_true_dx=False):
     """Evaluate the integral of a given function f, on a given interval (a, b), using Trapezoidal rule algorithm.
 
     Args:
@@ -580,13 +580,17 @@ def trapezoidal(f,a, b, dx=1e-5):
     """
     Dx = np.abs(b-a)
     N = int(Dx / dx)
-    print(N)
+    dx = Dx / N
+
     f_arr = f(a + np.arange(1, N)*dx)
-    return dx/2 * (f(a) + 2*np.sum(f_arr) + f(b))
+    if r_true_dx:
+        return dx/2 * (f(a) + 2*np.sum(f_arr) + f(b)), dx
+    else:
+        return dx/2 * (f(a) + 2*np.sum(f_arr) + f(b))
 
 
 
-def Simpson(f,a, b, dx=1e-5):
+def Simpson(f,a, b, dx=1e-5, r_true_dx=False):
     """Evaluate the integral of a given function f, on a given interval (a, b), using Simpson's rule algorithm.
 
     Args:
@@ -601,10 +605,12 @@ def Simpson(f,a, b, dx=1e-5):
     dx = Dx / N
 
     f_arr = f(a + np.arange(1, N)*dx)
-    f_even = f_arr[1::2]
-    f_odd = f_arr[0::2]
-    
-    return dx/3 * (f(a) + 2*np.sum(f_even) + 4*np.sum(f_odd) + f(b))
+    f_odd = f_arr[1::2]
+    f_even = f_arr[0::2]
+    if r_true_dx:
+        return (dx/3 * (f(a) + 2*np.sum(f_even) + 4*np.sum(f_odd) + f(b))), dx
+    else:
+        return dx/3 * (f(a) + 2*np.sum(f_even) + 4*np.sum(f_odd) + f(b))
    
 
 
