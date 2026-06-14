@@ -363,7 +363,8 @@ def lin_fit (x, y, cov=None, poly_order=1, plus_minus=False, name_pars=None,
     
     
     ax.legend(handles=handles, labels=labels)
-
+    
+    plt.tight_layout()
     # ax.set_aspect('equal')
     if save_name != None:
         plt.savefig(save_name)

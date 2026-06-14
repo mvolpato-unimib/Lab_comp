@@ -543,6 +543,32 @@ def rk4(f_xy, y0, x):
 # ----------------------------------------------------------
 # NUMERICAL INTEGRATION
 # ----------------------------------------------------------
+def loc_trapezoidal(f, x0, dx=1e-5):
+    """Evaluate the integral of a given function f, on a given interval (x0, x0+dx), using local Trapezoidal rule algorithm.
+
+    Args:
+        f (function): The function onto the integral is evaluated.
+        x0 (float): Lower extreme of the interval
+        dx (float, optional): Step for the evaluation in the algorithm. Default to 1e-5. 
+    """
+    return dx/2 * (f(x0) + f(x0+dx))
+
+
+
+def loc_Simpson(f, x0, dx=1e-5):
+    """Evaluate the integral of a given function f, on a given interval (x0, x0+dx), using local Simpson's rule algorithm.
+
+    Args:
+        f (function): The function onto the integral is evaluated.
+        x0 (float): Lower extreme of the interval
+        dx (float, optional): Step for the evaluation in the algorithm. Default to 1e-5. 
+    """
+    return dx/6 * (f(x0) + 4*f(x0 + dx/2) + f(x0+dx))
+
+
+
+
+
 def trapezoidal(f,a, b, dx=1e-5):
     """Evaluate the integral of a given function f, on a given interval (a, b), using Trapezoidal rule algorithm.
 
@@ -554,6 +580,7 @@ def trapezoidal(f,a, b, dx=1e-5):
     """
     Dx = np.abs(b-a)
     N = int(Dx / dx)
+    print(N)
     f_arr = f(a + np.arange(1, N)*dx)
     return dx/2 * (f(a) + 2*np.sum(f_arr) + f(b))
 
