@@ -605,8 +605,8 @@ def Simpson(f,a, b, dx=1e-5, r_true_dx=False):
     dx = Dx / N
 
     f_arr = f(a + np.arange(1, N)*dx)
-    f_odd = f_arr[1::2]
-    f_even = f_arr[0::2]
+    f_even = f_arr[1::2]
+    f_odd = f_arr[0::2]
     if r_true_dx:
         return (dx/3 * (f(a) + 2*np.sum(f_even) + 4*np.sum(f_odd) + f(b))), dx
     else:
