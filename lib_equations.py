@@ -615,7 +615,7 @@ def Simpson(f,a, b, dx=1e-5, r_true_dx=False):
 
 
 
-def Gauss_Leg(f,a, b, dx=1e-5):
+def Gauss_Leg(f,a, b, dx=1e-5, r_true_dx=False):
     """Evaluate the integral of a given function f, on a given interval (a, b), using 2-points Gauss Legendre algorithm.
 
     Args:
@@ -631,7 +631,10 @@ def Gauss_Leg(f,a, b, dx=1e-5):
     arr_p = dx * (np.arange(N) + c_p)
     arr_m = dx * (np.arange(N) + c_m)
     
-    return dx/2 * np.sum(f(a+arr_p) + f(a+arr_m))
+    if r_true_dx:
+        return (dx/2 * np.sum(f(a+arr_p) + f(a+arr_m)), dx)
+    else:
+        return dx/2 * np.sum(f(a+arr_p) + f(a+arr_m))
    
 
 def H_weigts(x, n): 
