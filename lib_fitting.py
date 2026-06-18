@@ -202,7 +202,7 @@ def plot_fit (f, x_sc, y_sc, yerr, params, cov_par,
 
 def lin_fit (x, y, cov=None, poly_order=1, plus_minus=False, name_pars=None,
              mar='.', col='red', name_points='name points',
-             labels=[r'x', r'y'], nsigma=3, lims=None, 
+             labels=[r'$x$', r'$y$'], nsigma=3, lims=None, 
              ErrTrue=False, save_name=None, write_formula=False,
              figsz=(8, 5), true_val_student=None):
     """Executes a polynomial fit and plots the results with customizable styling and confidence intervals.
@@ -217,7 +217,7 @@ def lin_fit (x, y, cov=None, poly_order=1, plus_minus=False, name_pars=None,
         mar (str, optional): The matplotlib marker style for the data points. Defaults to '.'.
         col (str, optional): The color used for the plot elements. Defaults to 'red'.
         name_points (str, optional): The legend label for the scatter data. Defaults to 'name points'.
-        labels (list of str, optional): The axis labels [x_label, y_label]. Defaults to [r'x', r'y'].
+        labels (list of str, optional): The axis labels [x_label, y_label]. Defaults to [r'$x$', r'$y$'].
         nsigma (float, optional): The number of standard deviations for the error band. Defaults to 3.
         lims (list or tuple, optional): The [min, max] limits for both x and y axes. Defaults to None.
         ErrTrue (bool, optional): If True, plots error bars and the confidence band. Defaults to True.
