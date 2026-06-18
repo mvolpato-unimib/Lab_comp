@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath('..'))
 from lib_equations import Gauss_Herm
 
 def func(x):
-    return np.exp(-x**2)
+    return 1 / (1+x**2)
 
 n_deg_1 = np.arange(1, 23, 2)
 true_1 = np.e * np.pi * math.erfc(1)

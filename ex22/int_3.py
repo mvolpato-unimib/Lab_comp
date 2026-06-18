@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath('..'))
 from lib_equations import Gauss_Herm
 
 def func(x): 
-    return x**5 * np.where(x<3, np.zeros_like(x), np.ones_like(x))
+    return x**5 * (x>= 3)
 
 true_3 = 101*np.exp(-9) / 2 
 n_deg_3 = np.arange(5, 23, 2)

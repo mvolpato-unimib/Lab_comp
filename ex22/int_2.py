@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath('..'))
 from lib_equations import Gauss_Herm
 
 def func(x): 
-    return 1/2 * x**8
+    return x**8 /2
 
 n_deg_2 = np.arange(1, 23, 2)
 true_2 = 105/32 * np.sqrt(np.pi)
