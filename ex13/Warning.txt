@@ -1,0 +1,7 @@
+for generating the plots it is necessary to run optim.py, that will output a txt file needed
+for the notebook. This file was produced to make the plot in the folder, but was deleted because 
+it reached a very large size and couldn't be uploaded to github.
+
+You will need to run the .py file again to reproduce another equivalent plot. 
+
+

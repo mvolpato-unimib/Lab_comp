@@ -12,7 +12,7 @@ def main():
     import sys
     import os
     sys.path.append(os.path.abspath('..'))
-    from lib_algebra import QR_eigensolver, inv_power_mth
+    from lib_algebra import QR_eigensolver
 
     vals, vects = ([], [])
     for k, V0_L in enumerate(v_ls):

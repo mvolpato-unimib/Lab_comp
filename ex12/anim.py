@@ -55,19 +55,12 @@ def init():
 
 
 def update(frame):
-    """
-    frame: indice dell'array x_ts, y_ts
-    """
-    # index is always positive
     start_idx = max(0, frame - n_points_back)
     
-    # position of the planet at the moment
     xp = x_ts[frame]
     yp = y_ts[frame]
     planet.set_data([xp], [yp])
     
-    # Update of the polygon 
-    # polygon == Sun -> curve -> Sun
     x_arch = x_ts[start_idx : frame + 1]
     y_arch = y_ts[start_idx : frame + 1]
     

@@ -11,10 +11,8 @@
 template <typename Precision>
 void compute_basel(int start_n, int end_n)
 {
-    // True value in double precision
     double true_sum = std::numbers::pi_v<double> * std::numbers::pi_v<double> / 6.0;
 
-    // Typename determined at compile-time
     std::string type_name = std::is_same_v<Precision, float> ? "float" : "double";
     std::string filename = "output_" + type_name + ".txt";
     
@@ -38,7 +36,6 @@ void compute_basel(int start_n, int end_n)
 
     for (size_t i = 0; i < static_cast<size_t>(num_points); i++) {
         Precision n_int = log_vector[i];
-        // --- Normal ordering sum (greatest to smallest) ---
         Precision out_norm = 0;
         for (size_t n = 1; n <= n_int; ++n) {
             Precision term = Precision(1.0) / (Precision(n) * Precision(n));
@@ -46,7 +43,6 @@ void compute_basel(int start_n, int end_n)
         }
         Precision err_norm = std::abs(true_sum - (out_norm));
 
-        // --- Inverse sum (smallest to greatest) ---
         Precision out_inverse = 0;
         for (size_t n = n_int; n > 0; --n) {
             Precision term = Precision(1.0) / (Precision(n) * Precision(n));
